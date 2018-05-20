@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "scripts": {
     "dev": "bsb -make-world -w",
-    "build": "bsb -clean-world -make-world",
-    "test": "yarn build && jest --coverage"
+    "build": "bsb -clean-world -make-world"
   },
   "license": "MIT",
   "keywords": [
