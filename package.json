@@ -1,0 +1,32 @@
+{
+  "name": "re-active",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "bsb -make-world -w",
+    "build": "bsb -clean-world -make-world",
+    "test": "yarn build && jest --coverage"
+  },
+  "license": "MIT",
+  "keywords": [
+    "reason",
+    "reasonml",
+    "reactive",
+    "react",
+    "reason-react"
+  ],
+  "author": "mobily",
+  "homepage": "https://github.com/mobily/re-active#readme",
+  "bugs": "https://github.com/mobily/re-active/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mobily/re-active.git"
+  },
+  "dependencies": {
+    "bs-callbag": "^0.1.1",
+    "reason-react": "^0.4.1"
+  },
+  "devDependencies": {
+    "@glennsl/bs-jest": "^0.4.2",
+    "bs-platform": "^3.0.0"
+  }
+}

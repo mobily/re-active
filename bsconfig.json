@@ -1,0 +1,32 @@
+{
+  "name": "re-active",
+  "reason": {
+    "react-jsx": 2
+  },
+  "bsc-flags": [
+    "-bs-super-errors"
+  ],
+  "bs-dependencies": [
+    "bs-callbag",
+    "reason-react"
+  ],
+  "bs-dev-dependencies": [
+    "@glennsl/bs-jest"
+  ],
+  "namespace": true,
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    },
+    {
+      "dir": "__tests__",
+      "type": "dev"
+    }
+  ],
+  "refmt": 3,
+  "warnings": {
+    "number": "+R",
+    "error": "+R"
+  }
+}
