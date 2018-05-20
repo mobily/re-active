@@ -1,6 +1,7 @@
 node_modules/
 lib/
 coverage/
+dist/
 
 .DS_Store
 .merlin
@@ -8,3 +9,4 @@ coverage/
 .bsb.lock
 
 *.log
+*.bs.js
