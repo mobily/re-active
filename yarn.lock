@@ -22,6 +22,25 @@
   dependencies:
     jest "^22.0.4"
 
+"@mobily/bs-callbag@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@mobily/bs-callbag/-/bs-callbag-0.1.2.tgz#cd8da939a8c1b7aaca66b33aac3ff6998baf0160"
+  dependencies:
+    callbag-basics "^3.0.0"
+    callbag-behavior-subject "^1.1.0"
+    callbag-concat-map "^1.1.0"
+    callbag-distinct-until-changed "^1.0.0"
+    callbag-flat-map "^1.0.0"
+    callbag-observe "^1.0.0"
+    callbag-of "^1.0.0"
+    callbag-pump "^1.0.0"
+    callbag-rescue "^1.0.1"
+    callbag-start-with "^2.1.1"
+    callbag-subscribe "^1.2.0"
+    callbag-switch-map "^1.0.1"
+    callbag-take-until "^1.0.1"
+    callbag-tap "^1.1.0"
+
 abab@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/abab/-/abab-1.0.4.tgz#5faad9c2c07f60dd76770f71cf025b62a63cfd4e"
@@ -415,25 +434,6 @@ browser-resolve@^1.11.2:
   resolved "https://registry.yarnpkg.com/browser-resolve/-/browser-resolve-1.11.2.tgz#8ff09b0a2c421718a1051c260b32e48f442938ce"
   dependencies:
     resolve "1.1.7"
-
-bs-callbag@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/bs-callbag/-/bs-callbag-0.1.1.tgz#dc7df518c2779ff7c197b16d4c54146419c6bd10"
-  dependencies:
-    callbag-basics "^3.0.0"
-    callbag-behavior-subject "^1.1.0"
-    callbag-concat-map "^1.1.0"
-    callbag-distinct-until-changed "^1.0.0"
-    callbag-flat-map "^1.0.0"
-    callbag-observe "^1.0.0"
-    callbag-of "^1.0.0"
-    callbag-pump "^1.0.0"
-    callbag-rescue "^1.0.1"
-    callbag-start-with "^2.1.1"
-    callbag-subscribe "^1.2.0"
-    callbag-switch-map "^1.0.1"
-    callbag-take-until "^1.0.1"
-    callbag-tap "^1.1.0"
 
 bs-platform@^3.0.0:
   version "3.0.0"

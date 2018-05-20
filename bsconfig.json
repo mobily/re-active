@@ -7,7 +7,7 @@
     "-bs-super-errors"
   ],
   "bs-dependencies": [
-    "bs-callbag",
+    "@mobily/bs-callbag",
     "reason-react"
   ],
   "bs-dev-dependencies": [
