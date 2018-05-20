@@ -1,0 +1,27 @@
+{
+  "name": "re-active-example",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "node_modules/.bin/concurrently 'yarn dev:reason' 'yarn dev:packager'",
+    "dev:reason": "node_modules/.bin/bsb -make-world -w",
+    "dev:packager": "node_modules/.bin/parcel src/index.html --no-cache --port 6767",
+    "build": "node_modules/.bin/bsb -make-world",
+    "clean": "node_modules/.bin/bsb -clean-world",
+    "format": "find . -name '*.re' -exec refmt --in-place {} \\;"
+  },
+  "author": "mobily",
+  "license": "MIT",
+  "dependencies": {
+    "bs-css": "^6.6.0",
+    "react": "16.3.1",
+    "reason-react": "^0.4.0",
+    "reason-reroute": "^0.0.4"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "bs-platform": "^3.0.0",
+    "concurrently": "^3.5.1",
+    "parcel-bundler": "^1.7.1"
+  }
+}
