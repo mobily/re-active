@@ -22,9 +22,9 @@
   dependencies:
     jest "^22.0.4"
 
-"@mobily/bs-callbag@^0.1.2":
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/@mobily/bs-callbag/-/bs-callbag-0.1.2.tgz#cd8da939a8c1b7aaca66b33aac3ff6998baf0160"
+"@mobily/bs-callbag@^0.2.0":
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/@mobily/bs-callbag/-/bs-callbag-0.2.0.tgz#e46e44491bf67d13d0a1acb42ad0e6a6fb648667"
   dependencies:
     callbag-basics "^3.0.0"
     callbag-behavior-subject "^1.1.0"
@@ -435,9 +435,9 @@ browser-resolve@^1.11.2:
   dependencies:
     resolve "1.1.7"
 
-bs-platform@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-3.0.0.tgz#38f200730db52fdea37819376b6ac3dfb20244c0"
+bs-platform@^3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/bs-platform/-/bs-platform-3.1.3.tgz#95c70584735e2b50922f5347159d6d89180231f6"
 
 bser@^2.0.0:
   version "2.0.0"
