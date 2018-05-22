@@ -3,7 +3,8 @@
   "version": "0.1.2",
   "scripts": {
     "dev": "bsb -make-world -w",
-    "build": "bsb -clean-world -make-world"
+    "clean": "bsb -clean-world",
+    "build": "bsb -make-world"
   },
   "license": "MIT",
   "keywords": [
