@@ -11,6 +11,6 @@ class observable ('a) (value: 'a) = {
   pub stream = subject |> BehaviorSubject.asStream;
   pub next = value => {
     raw = value;
-    self#subject |> BehaviorSubject.next(value);
+    self#subject |. BehaviorSubject.next(value);
   };
 };
