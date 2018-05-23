@@ -3,7 +3,7 @@ open BsCallbag;
 module type Impl = {
   type t;
   type primaryKey;
-  let default: t;
+  let default: unit => t;
   let primaryKey: t => primaryKey;
 };
 
@@ -16,7 +16,7 @@ module type Intf = {
   let make: t => observable;
   let update: (t => t, observable) => unit;
   let primaryKey: t => primaryKey;
-  let default: t;
+  let default: unit => t;
 };
 
 module Make =
