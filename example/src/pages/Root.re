@@ -16,7 +16,6 @@ module Style = {
   );
   global(".application", [display @: block]);
   let root = style([display @: block]);
-  let root = style([display @: block]);
 };
 
 type action =
