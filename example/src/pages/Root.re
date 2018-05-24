@@ -44,9 +44,13 @@ let make = _children => {
         ReasonReact.UpdateWithSideEffects(
           {text: ""},
           (
-            self => {
+            _self => {
               let todo =
-                Todo.Model.make({id: "123", name: text, completed: false});
+                Todo.Model.make({
+                  id: SecureRandomString.genSync(),
+                  name: text,
+                  completed: false,
+                });
               Todo.(collection |> Collection.add(todo));
             }
           ),
@@ -69,6 +73,7 @@ let make = _children => {
             | "Escape" =>
               e |> ReactEventRe.Keyboard.preventDefault;
               self.send(ClearTodo);
+
             | _ => ()
             };
           }

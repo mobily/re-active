@@ -6,7 +6,11 @@ module Model = {
       completed: bool,
     };
     type primaryKey = string;
-    let default = () => {id: "", name: "", completed: false};
+    let default = () => {
+      id: SecureRandomString.genSync(),
+      name: "",
+      completed: false,
+    };
     let primaryKey = (model: t) => model.id;
   };
   include Model.Make(Impl);
