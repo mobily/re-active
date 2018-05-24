@@ -1,12 +1,10 @@
-type todo = {
-  id: string,
-  name: string,
-  completed: bool,
-};
-
 module Model = {
   module Impl = {
-    type t = todo;
+    type t = {
+      id: string,
+      name: string,
+      completed: bool,
+    };
     type primaryKey = string;
     let default = () => {id: "", name: "", completed: false};
     let primaryKey = (model: t) => model.id;
