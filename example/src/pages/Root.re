@@ -19,9 +19,62 @@ module Style = {
   let root = style([display @: block]);
 };
 
-let component = statelessComponent("Root");
+type action =
+  | ChangeText(string)
+  | AddTodo
+  | ClearTodo;
+
+type state = {text: string};
+
+let component = reducerComponent("Root");
+
+let getTargetValue = event => ReactDOMRe.domElementToObj(
+                                ReactEventRe.Form.target(event),
+                              )##value;
 
 let make = _children => {
   ...component,
-  render: _self => <div className=Style.root> <TodoList /> </div>,
+  initialState: () => {text: ""},
+  reducer: (action, state) =>
+    switch (action) {
+    | ChangeText(text) => Update({text: text})
+    | AddTodo =>
+      switch (String.trim(state.text)) {
+      | "" => ReasonReact.NoUpdate
+      | text =>
+        ReasonReact.UpdateWithSideEffects(
+          {text: ""},
+          (
+            self => {
+              let todo =
+                Todo.Model.make({id: "123", name: text, completed: false});
+              Todo.(collection |> Collection.add(todo));
+            }
+          ),
+        )
+      }
+    | ClearTodo => Update({text: ""})
+    },
+  render: self =>
+    <div className=Style.root>
+      <TextInput
+        value=self.state.text
+        onChange=(e => self.send(ChangeText(getTargetValue(e))))
+        onKeyDown=(
+          e => {
+            let key = ReactEventRe.Keyboard.key(e);
+            switch (key) {
+            | "Enter" =>
+              e |> ReactEventRe.Keyboard.preventDefault;
+              self.send(AddTodo);
+            | "Escape" =>
+              e |> ReactEventRe.Keyboard.preventDefault;
+              self.send(ClearTodo);
+            | _ => ()
+            };
+          }
+        )
+      />
+      <TodoList />
+    </div>,
 };
