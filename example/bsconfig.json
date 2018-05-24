@@ -21,6 +21,7 @@
   "suffix": ".bs.js",
   "namespace": true,
   "bs-dependencies": [
+    "@ncthbrt/re-secure-random-string",
     "@mobily/bs-callbag",
     "reason-react",
     "bs-css"

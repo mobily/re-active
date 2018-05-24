@@ -12,6 +12,7 @@
   "author": "mobily",
   "license": "MIT",
   "dependencies": {
+    "@ncthbrt/re-secure-random-string": "^2.0.0",
     "bs-css": "^6.6.0",
     "react": "16.3.1",
     "reason-reroute": "^0.0.4"
