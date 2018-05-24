@@ -15,7 +15,28 @@ let make = (~todo, _children) => {
   render: _self =>
     Style.(
       <Observer.Model observable=todo>
-        ...(todo => <div className=root> (string(todo.name)) </div>)
+        ...(
+             raw =>
+               <div className=root>
+                 (string(raw.name))
+                 <span
+                   onClick=(
+                     _e =>
+                       Todo.Model.(
+                         todo
+                         |> update(model =>
+                              {...model, completed: ! model.completed}
+                            )
+                       )
+                   )>
+                   (
+                     string(
+                       " is completed? " ++ string_of_bool(raw.completed),
+                     )
+                   )
+                 </span>
+               </div>
+           )
       </Observer.Model>
     ),
 };
