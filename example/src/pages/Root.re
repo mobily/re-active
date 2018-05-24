@@ -62,7 +62,7 @@ let make = _children => {
     <div className=Style.root>
       <TextInput
         value=self.state.text
-        onChange=(e => self.send(ChangeText(getTargetValue(e))))
+        onChange=(e => self.send(ChangeText(e |> getTargetValue)))
         onKeyDown=(
           e => {
             let key = ReactEventRe.Keyboard.key(e);
@@ -73,7 +73,6 @@ let make = _children => {
             | "Escape" =>
               e |> ReactEventRe.Keyboard.preventDefault;
               self.send(ClearTodo);
-
             | _ => ()
             };
           }
