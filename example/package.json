@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "node_modules/.bin/concurrently 'yarn dev:reason' 'yarn dev:packager'",
     "dev:reason": "../node_modules/.bin/bsb -make-world -w",
-    "dev:packager": "node_modules/.bin/parcel src/index.html --no-cache --port 6767",
+    "dev:packager": "node webpack.server.js",
     "build": "../node_modules/.bin/bsb -make-world",
     "clean": "../node_modules/.bin/bsb -clean-world",
     "format": "find . -name '*.re' -exec refmt --in-place {} \\;"
@@ -17,9 +17,11 @@
     "reason-reroute": "^0.0.4"
   },
   "devDependencies": {
-    "babel-preset-env": "^1.6.1",
-    "babel-preset-react": "^6.24.1",
+    "compression": "^1.7.2",
     "concurrently": "^3.5.1",
-    "parcel-bundler": "^1.7.1"
+    "html-webpack-plugin": "^3.2.0",
+    "koa-connect": "^2.0.1",
+    "webpack": "^4.8.3",
+    "webpack-serve": "0.3.2"
   }
 }
