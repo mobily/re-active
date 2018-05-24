@@ -19,16 +19,7 @@ let make = (~todo, _children) => {
              raw =>
                <div className=root>
                  (string(raw.name))
-                 <span
-                   onClick=(
-                     _e =>
-                       Todo.Model.(
-                         todo
-                         |> update(model =>
-                              {...model, completed: ! model.completed}
-                            )
-                       )
-                   )>
+                 <span onClick=(_e => Todo.Model.(todo |> toggleCompleted))>
                    (
                      string(
                        " is completed? " ++ string_of_bool(raw.completed),

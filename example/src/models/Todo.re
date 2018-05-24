@@ -13,7 +13,10 @@ module Model = {
     };
     let primaryKey = (model: t) => model.id;
   };
-  include Model.Make(Impl);
+  module Todo = Model.Make(Impl);
+  let toggleCompleted = todo =>
+    todo |> Todo.update(model => {...model, completed: ! model.completed});
+  include Todo;
 };
 
 module Collection = Collection.Make(Model);
