@@ -3,12 +3,12 @@ type observables('a, 'b) = list(('a, 'b));
 class observable ('a) (value: 'a) = {
   as self;
   val mutable raw = value;
-  val subject = BehaviorSubject.make(value);
+  val subject = Callbag.BehaviorSubject.make(value);
   pub raw = raw;
   pub subject = subject;
-  pub stream = subject |> BehaviorSubject.asStream;
+  pub stream = Callbag.(subject |> BehaviorSubject.asStream);
   pub next = value => {
     raw = value;
-    self#subject |. BehaviorSubject.next(value);
+    Callbag.(self#subject |. BehaviorSubject.next(value));
   };
 };
