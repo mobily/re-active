@@ -1,3 +1,5 @@
+open ReActive;
+
 module Model = {
   module Impl = {
     type t = {
