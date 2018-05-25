@@ -15,9 +15,6 @@ module.exports = {
       resolve('node_modules'),
       resolve('..', 'node_modules'),
     ],
-    alias: {
-      'bs-callbag': resolve('..', 'node_modules', '@mobily', 'bs-callbag'),
-    },
   },
   watch: true,
   entry: [
