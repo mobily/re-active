@@ -1,5 +1,3 @@
-open BsCallbag;
-
 module type Intf = {
   type model;
   type primaryKey;

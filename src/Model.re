@@ -1,5 +1,3 @@
-open BsCallbag;
-
 module type Impl = {
   type t;
   type primaryKey;

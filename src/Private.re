@@ -1,5 +1,3 @@
-open BsCallbag;
-
 type observables('a, 'b) = list(('a, 'b));
 
 class observable ('a) (value: 'a) = {

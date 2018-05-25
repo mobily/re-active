@@ -1,5 +1,3 @@
-open BsCallbag;
-
 module type Observer = {
   type t;
   type observable;
