@@ -22,9 +22,9 @@
   dependencies:
     jest "^22.0.4"
 
-"@mobily/bs-callbag@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@mobily/bs-callbag/-/bs-callbag-0.2.1.tgz#c975ce470daf62ee2ab8d1340e76de0cbbcc21d0"
+"@mobily/bs-callbag@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@mobily/bs-callbag/-/bs-callbag-0.3.0.tgz#1ced5213f75e89058e9da69a3b79f285f64b1aae"
   dependencies:
     callbag-basics "^3.0.0"
     callbag-behavior-subject "^1.1.0"
