@@ -1,100 +1,157 @@
-module Private = {
-  type observables('a, 'b) = list(('a, 'b));
+[@bs.module] external isEqual : ('a, 'b) => bool = "react-fast-compare";
 
-  class observable ('a) (value: 'a) = {
-    as self;
-    val mutable raw = value;
-    val subject = Callbag.BehaviorSubject.make(value);
-    pub raw = raw;
-    pub subject = subject;
-    pub stream = Callbag.(subject |> BehaviorSubject.asStream);
-    pub next = value => {
-      raw = value;
-      Callbag.(self#subject |. BehaviorSubject.next(value));
+module type Impl = {type t; type primaryKey; let primaryKey: t => primaryKey;};
+
+module type Intf = {
+  module rec Model: {
+    type t;
+    type primaryKey;
+    type observable = {
+      .
+      next: t => unit,
+      raw: t,
+      stream: Callbag.stream(t),
+      subject: Callbag.BehaviorSubject.t(t),
     };
+    let primaryKey: t => primaryKey;
+    let make: t => observable;
+    let initialState: observable => t;
+    let observer: observable => Callbag.stream(t);
+    let shouldUpdate:
+      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
+    let update: (t => t, observable) => unit;
+    let destroy: observable => unit;
+    let save: observable => unit;
+  }
+  and Collection: {
+    type t = list((Model.primaryKey, Model.observable));
+    type observable = {
+      .
+      next: (t, Model.t) => unit,
+      notify: Model.t => unit,
+      raw: t,
+      stream: Callbag.stream(t),
+      subject: Callbag.Subject.t(Model.t),
+    };
+    let list: observable;
+    let initialState: observable => t;
+    let observer: observable => Callbag.stream(t);
+    let shouldUpdate:
+      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
+    let add: Model.observable => unit;
+    let remove: Model.observable => unit;
+    /* let clear: unit => unit; */
   };
 };
 
-module Model = {
-  module type Impl = {
-    type t;
-    type primaryKey;
-    let default: unit => t;
-    let primaryKey: t => primaryKey;
-  };
-
-  module type Intf = {
-    type t;
-    type observable = Private.observable(t);
-    type primaryKey;
-    let initialState: observable => t;
-    let observer: observable => Callbag.stream(t);
-    let make: t => observable;
-    let update: (t => t, observable) => unit;
-    let primaryKey: t => primaryKey;
-    let default: unit => t;
-  };
-
-  module Make =
-         (M: Impl)
-         : (Intf with type t = M.t and type primaryKey = M.primaryKey) => {
+module Make =
+       (M: Impl)
+       : (
+           Intf with type Model.t = M.t and type Model.primaryKey = M.primaryKey
+         ) => {
+  module rec Model: {
     type t = M.t;
     type primaryKey = M.primaryKey;
-    class observable = class Private.observable(M.t);
-    let make = new observable;
-    let initialState = observable => observable#raw;
-    let observer = observable => observable#stream;
-    let default = M.default;
-    let update = (fn, observable) => fn(observable#raw) |> observable#next;
-    let primaryKey = M.primaryKey;
-  };
-};
-
-module Collection = {
-  module type Intf = {
-    type model;
-    type primaryKey;
-    type t = Private.observables(primaryKey, model);
-    type observable = Private.observable(t);
+    type observable = {
+      .
+      next: t => unit,
+      raw: t,
+      stream: Callbag.stream(t),
+      subject: Callbag.BehaviorSubject.t(t),
+    };
+    let primaryKey: t => primaryKey;
+    let make: t => observable;
     let initialState: observable => t;
     let observer: observable => Callbag.stream(t);
-    let make: t => observable;
-    let add: (model, observable) => unit;
-    let remove: (model, observable) => unit;
-    let clear: observable => unit;
-  };
-
-  module Make =
-         (M: Model.Intf)
-         : (
-             Intf with
-               type model := M.observable and type primaryKey := M.primaryKey
-           ) => {
-    type t = Private.observables(M.primaryKey, M.observable);
-    class observable = class Private.observable(t);
+    let shouldUpdate:
+      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
+    let update: (t => t, observable) => unit;
+    let destroy: observable => unit;
+    let save: observable => unit;
+  } = {
+    type t = M.t;
+    type primaryKey = M.primaryKey;
+    class observable (value: t) = {
+      as self;
+      val mutable raw = value;
+      val subject = Callbag.BehaviorSubject.make(value);
+      pub raw = raw;
+      pub subject = subject;
+      pub stream = Callbag.(subject |> BehaviorSubject.asStream);
+      pub next = value => {
+        raw = value;
+        Callbag.(self#subject |. BehaviorSubject.next(value));
+        Collection.list#notify(self#raw);
+      };
+    };
+    let primaryKey = M.primaryKey;
     let make = new observable;
     let initialState = observable => observable#raw;
     let observer = observable => observable#stream;
-    let add = (model, observable) => {
-      let list =
+    let shouldUpdate = ({ReasonReact.oldSelf, ReasonReact.newSelf}) =>
+      ! isEqual(oldSelf, newSelf);
+    let update = (fn, observable) => fn(observable#raw) |> observable#next;
+    let destroy = observable => Collection.remove(observable);
+    let save = observable => Collection.add(observable);
+  }
+  and Collection: {
+    type t = list((Model.primaryKey, Model.observable));
+    type observable = {
+      .
+      next: (t, Model.t) => unit,
+      notify: Model.t => unit,
+      raw: t,
+      stream: Callbag.stream(t),
+      subject: Callbag.Subject.t(Model.t),
+    };
+    let list: observable;
+    let initialState: observable => t;
+    let observer: observable => Callbag.stream(t);
+    let shouldUpdate:
+      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
+    let add: Model.observable => unit;
+    let remove: Model.observable => unit;
+    /* let clear: unit => unit; */
+  } = {
+    type t = list((Model.primaryKey, Model.observable));
+    class observable (value: t) = {
+      as self;
+      val mutable raw = value;
+      val subject = Callbag.Subject.make();
+      pub raw = raw;
+      pub subject = subject;
+      pub stream =
+        Callbag.(
+          subject
+          |. Subject.asStream
+          |. flatMap(_value => just(self#raw))
+        );
+      pub notify = model => Callbag.(self#subject |. Subject.next(model));
+      pub next = (value, model: Model.t) => {
+        raw = value;
+        self#notify(model);
+      };
+    };
+    let list = (new observable)([]);
+    let initialState = observable => observable#raw;
+    let observer = observable => observable#stream;
+    let shouldUpdate = _oldNewSelf => true;
+    let add = model => {
+      let list' =
         Belt.List.setAssoc(
-          observable#raw,
-          M.primaryKey(model#raw),
+          list#raw,
+          Model.primaryKey(model#raw),
           model,
           (===),
         );
-      observable#next(list);
+      list#next(list', model#raw);
     };
-    let remove = (model, observable) => {
-      let list =
-        Belt.List.removeAssoc(
-          observable#raw,
-          M.primaryKey(model#raw),
-          (===),
-        );
-      observable#next(list);
+    let remove = model => {
+      let list' =
+        Belt.List.removeAssoc(list#raw, M.primaryKey(model#raw), (===));
+      list#next(list', model#raw);
     };
-    let clear = observable => observable#next([]);
+    /* let clear = () => list#next([]); */
   };
 };
 
@@ -104,6 +161,8 @@ module Observer = {
     type observable;
     let observer: observable => Callbag.stream(t);
     let initialState: observable => t;
+    let shouldUpdate:
+      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
   };
 
   module type Intf = {
@@ -141,6 +200,7 @@ module Observer = {
     let make = (~observable, children) => {
       ...component,
       initialState: () => M.initialState(observable),
+      shouldUpdate: self => M.shouldUpdate(self),
       reducer: (action, _state) =>
         switch (action) {
         | OnNext(raw) => ReasonReact.Update(raw)
@@ -148,12 +208,14 @@ module Observer = {
       subscriptions: self => [
         Sub(
           () =>
-            M.observer(observable)
-            |> Callbag.subscribe(
-                 ~next=raw => self.send(OnNext(raw)),
-                 ~complete=Js.log,
-                 ~error=Js.log,
-               ),
+            Callbag.(
+              M.observer(observable)
+              |. subscribe(
+                   ~next=raw => self.send(OnNext(raw)),
+                   ~complete=Js.log,
+                   ~error=Js.log,
+                 )
+            ),
           Callbag.unsubscribe,
         ),
       ],
