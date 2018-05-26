@@ -44,15 +44,15 @@ let make = _children => {
         ReasonReact.UpdateWithSideEffects(
           {text: ""},
           (
-            _self => {
-              let todo =
-                Todo.Model.make({
+            _self =>
+              Todo.Model.(
+                make({
                   id: SecureRandomString.genSync(),
                   name: text,
                   completed: false,
-                });
-              Todo.(collection |> Collection.add(todo));
-            }
+                })
+                |> save
+              )
           ),
         )
       }

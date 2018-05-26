@@ -16,17 +16,22 @@ let make = (~todo, _children) => {
     Style.(
       <Observer.Model observable=todo>
         ...(
-             raw =>
+             raw => {
+               Js.log(raw);
                <div className=root>
                  (string(raw.name))
-                 <span onClick=(_e => Todo.Model.(todo |> toggleCompleted))>
+                 <span onClick=(_e => Model.(todo |> toggleCompleted))>
                    (
                      string(
                        " is completed? " ++ string_of_bool(raw.completed),
                      )
                    )
                  </span>
-               </div>
+                 <span onClick=(_e => Model.(todo |> destroy))>
+                   (string("remove me"))
+                 </span>
+               </div>;
+             }
            )
       </Observer.Model>
     ),

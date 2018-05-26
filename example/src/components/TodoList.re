@@ -24,14 +24,34 @@ let make = _children => {
   render: _self =>
     Style.(
       <div className=root>
-        <Observer.Collection observable=collection>
+        <Observer.Collection observable=Collection.list>
           ...(
-               todos =>
-                 Belt.List.(
-                   map(todos, ((id, todo)) => <TodoItem key=id todo />)
-                   |> toArray
-                   |> array
-                 )
+               todos => {
+                 Js.log(todos);
+                 <div>
+                   <div>
+                     Belt.List.(
+                       map(todos, ((id, todo)) => <TodoItem key=id todo />)
+                       |> toArray
+                       |> array
+                     )
+                   </div>
+                   <div>
+                     (
+                       string(
+                         "completed: "
+                         ++ Belt.List.(
+                              keep(todos, ((_id, model)) =>
+                                model#raw.completed
+                              )
+                              |> length
+                              |> string_of_int
+                            ),
+                       )
+                     )
+                   </div>
+                 </div>;
+               }
              )
         </Observer.Collection>
       </div>
