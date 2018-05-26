@@ -26,8 +26,9 @@
     "url": "https://github.com/mobily/re-active.git"
   },
   "dependencies": {
-    "@mobily/bs-callbag": "^0.3.0",
-    "reason-react": "^0.4.1"
+    "@mobily/bs-callbag": "^0.3.2",
+    "react-fast-compare": "^1.0.0",
+    "reason-react": "^0.4.2"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.2",

@@ -22,9 +22,9 @@
   dependencies:
     jest "^22.0.4"
 
-"@mobily/bs-callbag@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@mobily/bs-callbag/-/bs-callbag-0.3.0.tgz#1ced5213f75e89058e9da69a3b79f285f64b1aae"
+"@mobily/bs-callbag@^0.3.2":
+  version "0.3.2"
+  resolved "https://registry.yarnpkg.com/@mobily/bs-callbag/-/bs-callbag-0.3.2.tgz#a03070e148e83d9ad91d523c4ba95393ffaa35f5"
   dependencies:
     callbag-basics "^3.0.0"
     callbag-behavior-subject "^1.1.0"
@@ -36,6 +36,7 @@
     callbag-pump "^1.0.0"
     callbag-rescue "^1.0.1"
     callbag-start-with "^2.1.1"
+    callbag-subject "^1.0.2"
     callbag-subscribe "^1.2.0"
     callbag-switch-map "^1.0.1"
     callbag-take-until "^1.0.1"
@@ -622,6 +623,10 @@ callbag-skip@1.0.x:
 callbag-start-with@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/callbag-start-with/-/callbag-start-with-2.1.1.tgz#42e378248475c5009e1934a07d58444bd0a083a2"
+
+callbag-subject@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/callbag-subject/-/callbag-subject-1.0.2.tgz#63923185000bcb10ec12d03491102aa43df93080"
 
 callbag-subscribe@^1.2.0:
   version "1.2.0"
@@ -2698,6 +2703,10 @@ rc@^1.1.7:
     object-assign "^4.1.1"
     prop-types "^15.6.0"
 
+react-fast-compare@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-1.0.0.tgz#813a039155e49b43ceffe99528fe5e9d97a6c938"
+
 "react@>=15.0.0 || >=16.0.0":
   version "16.3.2"
   resolved "https://registry.yarnpkg.com/react/-/react-16.3.2.tgz#fdc8420398533a1e58872f59091b272ce2f91ea9"
@@ -2740,9 +2749,9 @@ realpath-native@^1.0.0:
   dependencies:
     util.promisify "^1.0.0"
 
-reason-react@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/reason-react/-/reason-react-0.4.1.tgz#f1c8bf0d116be6bf43109912ee4d95e58dd7c64f"
+reason-react@^0.4.2:
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/reason-react/-/reason-react-0.4.2.tgz#690d34e3e91a2585cdc5f58384b6c8ff653c32c1"
   dependencies:
     react ">=15.0.0 || >=16.0.0"
     react-dom ">=15.0.0 || >=16.0.0"
