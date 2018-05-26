@@ -1,6 +1,9 @@
 {
   "name": "@mobily/re-active",
-  "bsc-flags": ["-bs-no-version-header", "-bs-super-errors"],
+  "bsc-flags": [
+    "-bs-no-version-header",
+    "-bs-super-errors"
+  ],
   "bs-dependencies": [
     "@mobily/bs-callbag",
     "reason-react"
@@ -8,14 +11,14 @@
   "bs-dev-dependencies": [
     "@glennsl/bs-jest"
   ],
-  "suffix": ".bs.js",
-  "sources": [
-    "src"
-  ],
   "package-specs": {
     "module": "commonjs",
     "in-source": true
   },
+  "suffix": ".bs.js",
+  "sources": [
+    "src"
+  ],
   "refmt": 3,
   "warnings": {
     "number": "+R",
