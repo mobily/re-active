@@ -133,7 +133,8 @@ module Make =
       type action =
         | OnNext(t);
       type state = t;
-      let component = ReasonReact.reducerComponent("ReActiveObserver");
+      let component =
+        ReasonReact.reducerComponent(M.name ++ "ReActiveModelObserver");
       let make = (~observable, children) => {
         ...component,
         initialState: () => observable#raw,
