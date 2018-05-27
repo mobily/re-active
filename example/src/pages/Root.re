@@ -45,13 +45,7 @@ let make = _children => {
           {text: ""},
           (
             _self =>
-              Todo.Model.(
-                make(default => {
-                  ...default,
-                  name: text,
-                })
-                |> save
-              )
+              Todo.Model.(make(default => {...default, name: text}) |. save)
           ),
         )
       }

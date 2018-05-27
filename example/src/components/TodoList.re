@@ -31,7 +31,7 @@ let make = _children => {
                  <div>
                    <div>
                      Belt.Array.(
-                       map(todos, todo => <TodoItem key=todo#raw.id todo />)
+                       map(todos, ((id, todo)) => <TodoItem key=id todo />)
                        |> array
                      )
                    </div>
@@ -40,7 +40,7 @@ let make = _children => {
                        string(
                          "completed: "
                          ++ Belt.Array.(
-                              keep(todos, model => model#raw.completed)
+                              keep(todos, ((_id, todo)) => todo#raw.completed)
                               |> length
                               |> string_of_int
                             ),
@@ -64,7 +64,7 @@ let make = _children => {
                      Collection.{
                        notifier: None,
                        models:
-                         Belt.Array.keep(models, todo => todo#raw.starred),
+                         Belt.Array.keep(models, ((_id, todo)) => todo#raw.starred),
                      }
                    )
               )
@@ -74,7 +74,7 @@ let make = _children => {
                  Js.log2("starred", todos);
                  <div>
                    Belt.Array.(
-                     map(todos, todo => <TodoItem key=todo#raw.id todo />)
+                     map(todos, ((id, todo)) => <TodoItem key=id todo />)
                      |> array
                    )
                  </div>;

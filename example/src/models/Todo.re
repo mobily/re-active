@@ -5,6 +5,7 @@ module Impl = {
     completed: bool,
     starred: bool,
   };
+  type primaryKey = string;
   let name = "Todo";
   let default = () => {
     id: SecureRandomString.genSync(),
@@ -12,6 +13,7 @@ module Impl = {
     completed: false,
     starred: false,
   };
+  let primaryKey = raw => raw.id;
 };
 
 module Active = ReActive.Make(Impl);
