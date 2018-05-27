@@ -30,17 +30,21 @@ module type Intf = {
   }
   and Collection: {
     type t = list((Model.primaryKey, Model.observable));
+    type observer = {
+      raw: t,
+      model: option(Model.t),
+    };
     type observable = {
       .
       next: (t, option(Model.t)) => unit,
       notify: option(Model.t) => unit,
       raw: t,
-      stream: Callbag.stream(t),
+      stream: Callbag.stream(observer),
       subject: Callbag.Subject.t(option(Model.t)),
     };
     let list: observable;
     let initialState: observable => t;
-    let observer: observable => Callbag.stream(t);
+    let observer: observable => Callbag.stream(observer);
     let shouldUpdate:
       ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let add: Model.observable => unit;
@@ -49,8 +53,8 @@ module type Intf = {
 
     module Observer: {
       type action =
-        | OnNext(t);
-      type state = t;
+        | OnNext(observer);
+      type state = observer;
       let make:
         (t => ReasonReact.reactElement) =>
         ReasonReact.componentSpec(
@@ -116,17 +120,21 @@ module Make =
   }
   and Collection: {
     type t = list((Model.primaryKey, Model.observable));
+    type observer = {
+      raw: t,
+      model: option(Model.t),
+    };
     type observable = {
       .
       next: (t, option(Model.t)) => unit,
       notify: option(Model.t) => unit,
       raw: t,
-      stream: Callbag.stream(t),
+      stream: Callbag.stream(observer),
       subject: Callbag.Subject.t(option(Model.t)),
     };
     let list: observable;
     let initialState: observable => t;
-    let observer: observable => Callbag.stream(t);
+    let observer: observable => Callbag.stream(observer);
     let shouldUpdate:
       ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let add: Model.observable => unit;
@@ -135,8 +143,8 @@ module Make =
 
     module Observer: {
       type action =
-        | OnNext(t);
-      type state = t;
+        | OnNext(observer);
+      type state = observer;
       let make:
         (t => ReasonReact.reactElement) =>
         ReasonReact.componentSpec(
@@ -149,6 +157,10 @@ module Make =
     };
   } = {
     type t = list((Model.primaryKey, Model.observable));
+    type observer = {
+      raw: t,
+      model: option(Model.t),
+    };
     class observable (value: t) = {
       as self;
       val mutable raw = value;
@@ -157,7 +169,9 @@ module Make =
       pub subject = subject;
       pub stream =
         Callbag.(
-          subject |. Subject.asStream |. flatMap(_value => just(self#raw))
+          subject
+          |. Subject.asStream
+          |. flatMap(model => just({raw: self#raw, model}))
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
       pub next = (value, model: option(Model.t)) => {
@@ -168,7 +182,8 @@ module Make =
     let list = (new observable)([]);
     let initialState = observable => observable#raw;
     let observer = observable => observable#stream;
-    let shouldUpdate = _oldNewSelf => true;
+    let shouldUpdate = ({ReasonReact.oldSelf, ReasonReact.newSelf}) =>
+      ! isEqual(oldSelf, newSelf);
     let add = model => {
       let list' =
         Belt.List.setAssoc(
@@ -188,17 +203,17 @@ module Make =
 
     module Observer = {
       type action =
-        | OnNext(t);
-      type state = t;
+        | OnNext(observer);
+      type state = observer;
       let component =
         ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = children => {
         ...component,
-        initialState: () => initialState(list),
+        initialState: () => {model: None, raw: initialState(list)},
         shouldUpdate: self => shouldUpdate(self),
         reducer: (action, _state) =>
           switch (action) {
-          | OnNext(raw) => ReasonReact.Update(raw)
+          | OnNext(observer) => ReasonReact.Update(observer)
           },
         subscriptions: self => [
           Sub(
@@ -206,7 +221,7 @@ module Make =
               Callbag.(
                 observer(list)
                 |. subscribe(
-                     ~next=raw => self.send(OnNext(raw)),
+                     ~next=observer => self.send(OnNext(observer)),
                      ~complete=Js.log,
                      ~error=Js.log,
                    )
@@ -214,7 +229,7 @@ module Make =
             Callbag.unsubscribe,
           ),
         ],
-        render: self => children(self.state),
+        render: self => children(self.state.raw),
       };
     };
   };
