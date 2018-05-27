@@ -71,6 +71,9 @@ let make = _children => {
           }
         )
       />
+      <div onClick=(_e => Todo.Collection.fakeBulkAdd())>
+        (string("add some todos"))
+      </div>
       <Counter />
       <TodoList />
     </div>,
