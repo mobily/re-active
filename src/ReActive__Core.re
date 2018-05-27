@@ -149,7 +149,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
                    ~error=Js.log,
                  )
             );
-          self.onUnmount(dispose);
+          self.onUnmount(() => dispose());
         },
         render: self => children(self.state),
       };
@@ -269,7 +269,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
                    ~error=Js.log,
                  )
             );
-          self.onUnmount(dispose);
+          self.onUnmount(() => dispose());
         },
         render: self => children(self.state.models),
       };

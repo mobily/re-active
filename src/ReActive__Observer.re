@@ -60,7 +60,7 @@ module Observer = {
                  ~error=Js.log,
                )
           );
-        self.onUnmount(dispose);
+        self.onUnmount(() => dispose());
       },
       render: self => children(self.state),
     };
