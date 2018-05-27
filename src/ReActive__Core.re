@@ -1,10 +1,6 @@
 [@bs.module] external isEqual : ('a, 'b) => bool = "react-fast-compare";
 
-module type Impl = {
-  type t;
-  let name: string;
-  let default: unit => t;
-};
+module type Impl = {type t; let name: string; let default: unit => t;};
 
 module type Intf = {
   module rec Model: {
@@ -79,11 +75,7 @@ module type Intf = {
   };
 };
 
-module Make =
-       (M: Impl)
-       : (
-           Intf with type Model.t = M.t
-         ) => {
+module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
   module rec Model: {
     type t = M.t;
     type observable = {
@@ -147,20 +139,18 @@ module Make =
           switch (action) {
           | OnNext(raw) => ReasonReact.Update(raw)
           },
-        subscriptions: self => [
-          Sub(
-            () =>
-              Callbag.(
-                observable#stream
-                |. subscribe(
-                     ~next=raw => self.send(OnNext(raw)),
-                     ~complete=Js.log,
-                     ~error=Js.log,
-                   )
-              ),
-            Callbag.unsubscribe,
-          ),
-        ],
+        didMount: self => {
+          let dispose =
+            Callbag.(
+              observable#stream
+              |. subscribe(
+                   ~next=raw => self.send(OnNext(raw)),
+                   ~complete=Js.log,
+                   ~error=Js.log,
+                 )
+            );
+          self.onUnmount(dispose);
+        },
         render: self => children(self.state),
       };
     };
@@ -269,20 +259,18 @@ module Make =
           switch (action) {
           | OnNext(observer) => ReasonReact.Update(observer)
           },
-        subscriptions: self => [
-          Sub(
-            () =>
-              Callbag.(
-                observer(stream)
-                |. subscribe(
-                     ~next=observer => self.send(OnNext(observer)),
-                     ~complete=Js.log,
-                     ~error=Js.log,
-                   )
-              ),
-            Callbag.unsubscribe,
-          ),
-        ],
+        didMount: self => {
+          let dispose =
+            Callbag.(
+              observer(stream)
+              |. subscribe(
+                   ~next=observer => self.send(OnNext(observer)),
+                   ~complete=Js.log,
+                   ~error=Js.log,
+                 )
+            );
+          self.onUnmount(dispose);
+        },
         render: self => children(self.state.models),
       };
     };

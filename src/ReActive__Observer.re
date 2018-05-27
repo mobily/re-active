@@ -50,20 +50,18 @@ module Observer = {
         switch (action) {
         | OnNext(raw) => ReasonReact.Update(raw)
         },
-      subscriptions: self => [
-        Sub(
-          () =>
-            Callbag.(
-              M.observer(observable)
-              |. subscribe(
-                   ~next=raw => self.send(OnNext(raw)),
-                   ~complete=Js.log,
-                   ~error=Js.log,
-                 )
-            ),
-          Callbag.unsubscribe,
-        ),
-      ],
+      didMount: self => {
+        let dispose =
+          Callbag.(
+            M.observer(observable)
+            |. subscribe(
+                 ~next=raw => self.send(OnNext(raw)),
+                 ~complete=Js.log,
+                 ~error=Js.log,
+               )
+          );
+        self.onUnmount(dispose);
+      },
       render: self => children(self.state),
     };
   };
