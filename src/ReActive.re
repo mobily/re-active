@@ -16,7 +16,6 @@ module type Intf = {
       next: t => unit,
       raw: t,
       stream: Callbag.stream(t),
-      subject: Callbag.BehaviorSubject.t(t),
     };
     let primaryKey: t => primaryKey;
     let make: t => observable;
@@ -40,7 +39,6 @@ module type Intf = {
       notify: option(Model.t) => unit,
       raw: t,
       stream: Callbag.stream(observer),
-      subject: Callbag.Subject.t(option(Model.t)),
     };
     let list: observable;
     let initialState: observable => t;
@@ -81,7 +79,6 @@ module Make =
       next: t => unit,
       raw: t,
       stream: Callbag.stream(t),
-      subject: Callbag.BehaviorSubject.t(t),
     };
     let primaryKey: t => primaryKey;
     let make: t => observable;
@@ -100,7 +97,7 @@ module Make =
       val mutable raw = value;
       val subject = Callbag.BehaviorSubject.make(value);
       pub raw = raw;
-      pub subject = subject;
+      pri subject = subject;
       pub stream = Callbag.(subject |> BehaviorSubject.asStream);
       pub next = value => {
         raw = value;
@@ -130,7 +127,6 @@ module Make =
       notify: option(Model.t) => unit,
       raw: t,
       stream: Callbag.stream(observer),
-      subject: Callbag.Subject.t(option(Model.t)),
     };
     let list: observable;
     let initialState: observable => t;
@@ -166,7 +162,7 @@ module Make =
       val mutable raw = value;
       val subject = Callbag.Subject.make();
       pub raw = raw;
-      pub subject = subject;
+      pri subject = subject;
       pub stream =
         Callbag.(
           subject
