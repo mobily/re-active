@@ -24,7 +24,7 @@ let make = _children => {
       () =>
         Callbag.(
           Todo.Collection.stream
-          |. map(observer => Belt.Array.length(observer.raw))
+          |. map(({models, _}) => Belt.Array.length(models))
           |. distinctUntilChanged
           |. subscribe(
                ~next=number => self.send(ChangeNumber(number)),

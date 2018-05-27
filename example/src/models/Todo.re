@@ -5,6 +5,7 @@ module Impl = {
     completed: bool,
     starred: bool,
   };
+  let name = "Todo";
   let default = () => {
     id: SecureRandomString.genSync(),
     name: "",
@@ -13,7 +14,6 @@ module Impl = {
   };
   type primaryKey = string;
   let primaryKey = (model: t) => model.id;
-  let name = "Todo";
 };
 
 module Active = ReActive.Make(Impl);
@@ -22,6 +22,8 @@ module Model = {
   include Active.Model;
   let toggleCompleted = todo =>
     todo |. update(model => {...model, completed: ! model.completed});
+  let togglePriority = todo =>
+    todo |. update(model => {...model, starred: ! model.starred});
 };
 
 module Collection = Active.Collection;

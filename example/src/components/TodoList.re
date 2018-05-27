@@ -27,7 +27,7 @@ let make = _children => {
         <Collection.Observer>
           ...(
                todos => {
-                 Js.log(todos);
+                 Js.log2("all", todos);
                  <div>
                    <div>
                      Belt.Array.(
@@ -50,6 +50,33 @@ let make = _children => {
                    <div onClick=(_e => Collection.clear())>
                      (string("clear all"))
                    </div>
+                 </div>;
+               }
+             )
+        </Collection.Observer>
+        /* only starred todos */
+        <Collection.Observer
+          observer=(
+            stream =>
+              Callbag.(
+                stream
+                |. map(({models, _}) =>
+                     Collection.{
+                       notifier: None,
+                       models:
+                         Belt.Array.keep(models, todo => todo#raw.starred),
+                     }
+                   )
+              )
+          )>
+          ...(
+               todos => {
+                 Js.log2("starred", todos);
+                 <div>
+                   Belt.Array.(
+                     map(todos, todo => <TodoItem key=todo#raw.id todo />)
+                     |> array
+                   )
                  </div>;
                }
              )
