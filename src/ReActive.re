@@ -19,7 +19,7 @@ module type Intf = {
     };
     let primaryKey: t => primaryKey;
     let make: t => observable;
-    let update: (t => t, observable) => unit;
+    let update: (observable, t => t) => unit;
     let destroy: observable => unit;
     let save: observable => unit;
 
@@ -94,7 +94,7 @@ module Make =
     };
     let primaryKey: t => primaryKey;
     let make: t => observable;
-    let update: (t => t, observable) => unit;
+    let update: (observable, t => t) => unit;
     let destroy: observable => unit;
     let save: observable => unit;
 
@@ -121,7 +121,7 @@ module Make =
       val subject = Callbag.BehaviorSubject.make(value);
       pub raw = raw;
       pri subject = subject;
-      pub stream = Callbag.(subject |> BehaviorSubject.asStream);
+      pub stream = Callbag.(subject |. BehaviorSubject.asStream);
       pub next = value => {
         raw = value;
         Callbag.(self#subject |. BehaviorSubject.next(value));
@@ -130,7 +130,7 @@ module Make =
     };
     let primaryKey = M.primaryKey;
     let make = new observable;
-    let update = (fn, observable) => fn(observable#raw) |> observable#next;
+    let update = (observable, fn) => fn(observable#raw) |. observable#next;
     let destroy = observable => Collection.remove(observable);
     let save = observable => Collection.add(observable);
 

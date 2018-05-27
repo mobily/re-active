@@ -14,7 +14,7 @@ module Active = ReActive.Make(Impl);
 module Model = {
   include Active.Model;
   let toggleCompleted = todo =>
-    todo |> update(model => {...model, completed: ! model.completed});
+    todo |. update(model => {...model, completed: ! model.completed});
 };
 
 module Collection = Active.Collection;
