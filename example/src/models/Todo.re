@@ -20,5 +20,4 @@ module Collection = Active.Collection;
 
 module Observer = {
   module Model = ReActive.Observer.Make(Model);
-  module Collection = ReActive.Observer.Make(Collection);
 };

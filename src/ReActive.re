@@ -41,6 +41,21 @@ module type Intf = {
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
+
+    module Observer: {
+      type action =
+        | OnNext(t);
+      type state = t;
+      let make:
+        (t => ReasonReact.reactElement) =>
+        ReasonReact.componentSpec(
+          state,
+          state,
+          ReasonReact.noRetainedProps,
+          ReasonReact.noRetainedProps,
+          action,
+        );
+    };
   };
 };
 
@@ -112,6 +127,21 @@ module Make =
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
+
+    module Observer: {
+      type action =
+        | OnNext(t);
+      type state = t;
+      let make:
+        (t => ReasonReact.reactElement) =>
+        ReasonReact.componentSpec(
+          state,
+          state,
+          ReasonReact.noRetainedProps,
+          ReasonReact.noRetainedProps,
+          action,
+        );
+    };
   } = {
     type t = list((Model.primaryKey, Model.observable));
     class observable (value: t) = {
@@ -150,6 +180,38 @@ module Make =
       list#next(list', Some(model#raw));
     };
     let clear = () => list#next([], None);
+
+    module Observer = {
+      type action =
+        | OnNext(t);
+      type state = t;
+      let component =
+        ReasonReact.reducerComponent("ReActiveCollectionObserver");
+      let make = children => {
+        ...component,
+        initialState: () => initialState(list),
+        shouldUpdate: self => shouldUpdate(self),
+        reducer: (action, _state) =>
+          switch (action) {
+          | OnNext(raw) => ReasonReact.Update(raw)
+          },
+        subscriptions: self => [
+          Sub(
+            () =>
+              Callbag.(
+                observer(list)
+                |. subscribe(
+                     ~next=raw => self.send(OnNext(raw)),
+                     ~complete=Js.log,
+                     ~error=Js.log,
+                   )
+              ),
+            Callbag.unsubscribe,
+          ),
+        ],
+        render: self => children(self.state),
+      };
+    };
   };
 };
 

@@ -24,7 +24,7 @@ let make = _children => {
   render: _self =>
     Style.(
       <div className=root>
-        <Observer.Collection observable=Collection.list>
+        <Collection.Observer>
           ...(
                todos => {
                  Js.log(todos);
@@ -56,7 +56,7 @@ let make = _children => {
                  </div>;
                }
              )
-        </Observer.Collection>
+        </Collection.Observer>
       </div>
     ),
 };
