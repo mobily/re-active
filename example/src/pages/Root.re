@@ -46,10 +46,9 @@ let make = _children => {
           (
             _self =>
               Todo.Model.(
-                make({
-                  id: SecureRandomString.genSync(),
+                make(default => {
+                  ...default,
                   name: text,
-                  completed: false,
                 })
                 |> save
               )

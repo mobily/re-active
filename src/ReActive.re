@@ -3,8 +3,9 @@
 module type Impl = {
   type t;
   type primaryKey;
-  let primaryKey: t => primaryKey;
   let name: string;
+  let primaryKey: t => primaryKey;
+  let default: unit => t;
 };
 
 module type Intf = {
@@ -18,7 +19,8 @@ module type Intf = {
       stream: Callbag.stream(t),
     };
     let primaryKey: t => primaryKey;
-    let make: t => observable;
+    let default: unit => t;
+    let make: (t => t) => observable;
     let update: (observable, t => t) => unit;
     let destroy: observable => unit;
     let save: observable => unit;
@@ -39,10 +41,7 @@ module type Intf = {
     };
   }
   and Collection: {
-    module IdComparator: {
-      type t = Model.observable;
-      type identity;
-    };
+    module IdComparator: {type t = Model.observable; type identity;};
     type t = Belt.Set.t(IdComparator.t, IdComparator.identity);
     type observer = {
       raw: array(IdComparator.t),
@@ -93,7 +92,8 @@ module Make =
       stream: Callbag.stream(t),
     };
     let primaryKey: t => primaryKey;
-    let make: t => observable;
+    let default: unit => t;
+    let make: (t => t) => observable;
     let update: (observable, t => t) => unit;
     let destroy: observable => unit;
     let save: observable => unit;
@@ -129,7 +129,8 @@ module Make =
       };
     };
     let primaryKey = M.primaryKey;
-    let make = new observable;
+    let default = M.default;
+    let make = fn => (new observable)(fn(default()));
     let update = (observable, fn) => fn(observable#raw) |. observable#next;
     let destroy = observable => Collection.remove(observable);
     let save = observable => Collection.add(observable);
@@ -167,10 +168,7 @@ module Make =
     };
   }
   and Collection: {
-    module IdComparator: {
-      type t = Model.observable;
-      type identity;
-    };
+    module IdComparator: {type t = Model.observable; type identity;};
     type t = Belt.Set.t(IdComparator.t, IdComparator.identity);
     type observer = {
       raw: array(IdComparator.t),
@@ -233,8 +231,7 @@ module Make =
       };
     };
     let beltSet = () => Belt.Set.make(~id=(module IdComparator));
-    let instance =
-      (new observable)(beltSet());
+    let instance = (new observable)(beltSet());
     let stream = instance#stream;
     let add = model => {
       let set' = Belt.Set.add(instance#raw, model);
@@ -254,7 +251,10 @@ module Make =
         ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = children => {
         ...component,
-        initialState: () => {model: None, raw: Belt.Set.toArray(instance#raw)},
+        initialState: () => {
+          model: None,
+          raw: Belt.Set.toArray(instance#raw),
+        },
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {

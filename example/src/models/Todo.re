@@ -3,6 +3,13 @@ module Impl = {
     id: string,
     name: string,
     completed: bool,
+    starred: bool,
+  };
+  let default = () => {
+    id: SecureRandomString.genSync(),
+    name: "",
+    completed: false,
+    starred: false,
   };
   type primaryKey = string;
   let primaryKey = (model: t) => model.id;
