@@ -1,10 +1,17 @@
 [@bs.module] external isEqual : ('a, 'b) => bool = "react-fast-compare";
 
-module type Impl = {type t; let name: string; let default: unit => t;};
+module type Impl = {
+  type t;
+  type primaryKey;
+  let name: string;
+  let default: unit => t;
+  let primaryKey: t => primaryKey;
+};
 
 module type Intf = {
   module rec Model: {
     type t;
+    type primaryKey;
     type observable = {
       .
       next: t => unit,
@@ -12,6 +19,7 @@ module type Intf = {
       stream: Callbag.stream(t),
     };
     let default: unit => t;
+    let primaryKey: t => primaryKey;
     let make: (t => t) => observable;
     let update: (observable, t => t) => unit;
     let destroy: observable => unit;
@@ -33,10 +41,14 @@ module type Intf = {
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.observable; type identity;};
+    module ObservableComparator: {type t = Model.primaryKey; type identity;};
     type t =
-      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-    type models = array(ObservableComparator.t);
+      Belt.Map.t(
+        ObservableComparator.t,
+        Model.observable,
+        ObservableComparator.identity,
+      );
+    type models = array((ObservableComparator.t, Model.observable));
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -46,7 +58,7 @@ module type Intf = {
       .
       next: (t, notifier) => unit,
       notify: notifier => unit,
-      set: t,
+      belt: t,
       stream: Callbag.stream(observer),
     };
     let instance: observable;
@@ -75,9 +87,14 @@ module type Intf = {
   };
 };
 
-module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
+module Make =
+       (M: Impl)
+       : (
+           Intf with type Model.t = M.t and type Model.primaryKey = M.primaryKey
+         ) => {
   module rec Model: {
     type t = M.t;
+    type primaryKey = M.primaryKey;
     type observable = {
       .
       next: t => unit,
@@ -85,6 +102,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
       stream: Callbag.stream(t),
     };
     let default: unit => t;
+    let primaryKey: t => primaryKey;
     let make: (t => t) => observable;
     let update: (observable, t => t) => unit;
     let destroy: observable => unit;
@@ -106,6 +124,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
     };
   } = {
     type t = M.t;
+    type primaryKey = M.primaryKey;
     class observable (value: t) = {
       as self;
       val mutable raw = value;
@@ -120,6 +139,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
       };
     };
     let default = M.default;
+    let primaryKey = M.primaryKey;
     let make = fn => (new observable)(fn(default()));
     let update = (observable, fn) => fn(observable#raw) |. observable#next;
     let destroy = observable => Collection.remove(observable);
@@ -149,17 +169,21 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
                    ~error=Js.log,
                  )
             );
-          self.onUnmount(() => dispose());
+          self.onUnmount(dispose);
         },
         render: self => children(self.state),
       };
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.observable; type identity;};
+    module ObservableComparator: {type t = Model.primaryKey; type identity;};
     type t =
-      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-    type models = array(ObservableComparator.t);
+      Belt.Map.t(
+        ObservableComparator.t,
+        Model.observable,
+        ObservableComparator.identity,
+      );
+    type models = array((ObservableComparator.t, Model.observable));
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -169,7 +193,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
       .
       next: (t, notifier) => unit,
       notify: notifier => unit,
-      set: t,
+      belt: t,
       stream: Callbag.stream(observer),
     };
     let instance: observable;
@@ -198,12 +222,16 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
   } = {
     module ObservableComparator =
       Belt.Id.MakeComparable({
-        type t = Model.observable;
+        type t = Model.primaryKey;
         let cmp = compare;
       });
     type t =
-      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-    type models = array(ObservableComparator.t);
+      Belt.Map.t(
+        ObservableComparator.t,
+        Model.observable,
+        ObservableComparator.identity,
+      );
+    type models = array((ObservableComparator.t, Model.observable));
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -211,36 +239,38 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
     };
     class observable (models: t) = {
       as self;
-      val mutable set = models;
+      val mutable belt = models;
       val subject = Callbag.Subject.make();
-      pub set = set;
+      pub belt = belt;
       pri subject = subject;
       pub stream =
         Callbag.(
           subject
           |. Subject.asStream
-          |. flatMap(model =>
-               just({notifier: model, models: Belt.Set.toArray(self#set)})
+          |. map(model =>
+               {notifier: model, models: Belt.Map.toArray(self#belt)}
              )
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
       pub next = (models, model: notifier) => {
-        set = models;
+        belt = models;
         self#notify(model);
       };
     };
-    let beltSet = () => Belt.Set.make(~id=(module ObservableComparator));
-    let instance = (new observable)(beltSet());
+    let belt = () => Belt.Map.make(~id=(module ObservableComparator));
+    let instance = (new observable)(belt());
     let stream = instance#stream;
     let add = model => {
-      let set' = Belt.Set.add(instance#set, model);
-      instance#next(set', Some(model#raw));
+      let belt' =
+        Belt.Map.set(instance#belt, Model.primaryKey(model#raw), model);
+      instance#next(belt', Some(model#raw));
     };
     let remove = model => {
-      let set' = Belt.Set.remove(instance#set, model);
-      instance#next(set', Some(model#raw));
+      let belt' =
+        Belt.Map.remove(instance#belt, Model.primaryKey(model#raw));
+      instance#next(belt', Some(model#raw));
     };
-    let clear = () => instance#next(beltSet(), None);
+    let clear = () => instance#next(belt(), None);
 
     module Observer = {
       type action =
@@ -252,7 +282,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
         ...component,
         initialState: () => {
           notifier: None,
-          models: Belt.Set.toArray(instance#set),
+          models: Belt.Map.toArray(instance#belt),
         },
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
@@ -269,7 +299,7 @@ module Make = (M: Impl) : (Intf with type Model.t = M.t) => {
                    ~error=Js.log,
                  )
             );
-          self.onUnmount(() => dispose());
+          self.onUnmount(dispose);
         },
         render: self => children(self.state.models),
       };
