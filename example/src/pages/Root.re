@@ -78,6 +78,7 @@ let make = _children => {
           }
         )
       />
+      <Counter />
       <TodoList />
     </div>,
 };
