@@ -39,9 +39,13 @@ module type Intf = {
     };
   }
   and Collection: {
-    type t = list((Model.primaryKey, Model.observable));
+    module IdComparator: {
+      type t = Model.observable;
+      type identity;
+    };
+    type t = Belt.Set.t(IdComparator.t, IdComparator.identity);
     type observer = {
-      raw: t,
+      raw: array(IdComparator.t),
       model: option(Model.t),
     };
     type observable = {
@@ -51,7 +55,8 @@ module type Intf = {
       raw: t,
       stream: Callbag.stream(observer),
     };
-    let list: observable;
+    let instance: observable;
+    let stream: Callbag.stream(observer);
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
@@ -61,7 +66,7 @@ module type Intf = {
         | OnNext(observer);
       type state = observer;
       let make:
-        (t => ReasonReact.reactElement) =>
+        (array(IdComparator.t) => ReasonReact.reactElement) =>
         ReasonReact.componentSpec(
           state,
           state,
@@ -120,7 +125,7 @@ module Make =
       pub next = value => {
         raw = value;
         Callbag.(self#subject |. BehaviorSubject.next(value));
-        Collection.(Some(self#raw) |. list#notify);
+        Collection.(Some(self#raw) |. instance#notify);
       };
     };
     let primaryKey = M.primaryKey;
@@ -162,9 +167,13 @@ module Make =
     };
   }
   and Collection: {
-    type t = list((Model.primaryKey, Model.observable));
+    module IdComparator: {
+      type t = Model.observable;
+      type identity;
+    };
+    type t = Belt.Set.t(IdComparator.t, IdComparator.identity);
     type observer = {
-      raw: t,
+      raw: array(IdComparator.t),
       model: option(Model.t),
     };
     type observable = {
@@ -174,7 +183,8 @@ module Make =
       raw: t,
       stream: Callbag.stream(observer),
     };
-    let list: observable;
+    let instance: observable;
+    let stream: Callbag.stream(observer);
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
@@ -184,7 +194,7 @@ module Make =
         | OnNext(observer);
       type state = observer;
       let make:
-        (t => ReasonReact.reactElement) =>
+        (array(IdComparator.t) => ReasonReact.reactElement) =>
         ReasonReact.componentSpec(
           state,
           state,
@@ -194,9 +204,14 @@ module Make =
         );
     };
   } = {
-    type t = list((Model.primaryKey, Model.observable));
+    module IdComparator =
+      Belt.Id.MakeComparable({
+        type t = Model.observable;
+        let cmp = compare;
+      });
+    type t = Belt.Set.t(IdComparator.t, IdComparator.identity);
     type observer = {
-      raw: t,
+      raw: array(IdComparator.t),
       model: option(Model.t),
     };
     class observable (value: t) = {
@@ -209,7 +224,7 @@ module Make =
         Callbag.(
           subject
           |. Subject.asStream
-          |. flatMap(model => just({raw: self#raw, model}))
+          |. flatMap(model => just({raw: Belt.Set.toArray(self#raw), model}))
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
       pub next = (value, model: option(Model.t)) => {
@@ -217,23 +232,19 @@ module Make =
         self#notify(model);
       };
     };
-    let list = (new observable)([]);
+    let beltSet = () => Belt.Set.make(~id=(module IdComparator));
+    let instance =
+      (new observable)(beltSet());
+    let stream = instance#stream;
     let add = model => {
-      let list' =
-        Belt.List.setAssoc(
-          list#raw,
-          Model.primaryKey(model#raw),
-          model,
-          (===),
-        );
-      list#next(list', Some(model#raw));
+      let set' = Belt.Set.add(instance#raw, model);
+      instance#next(set', Some(model#raw));
     };
     let remove = model => {
-      let list' =
-        Belt.List.removeAssoc(list#raw, M.primaryKey(model#raw), (===));
-      list#next(list', Some(model#raw));
+      let set' = Belt.Set.remove(instance#raw, model);
+      instance#next(set', Some(model#raw));
     };
-    let clear = () => list#next([], None);
+    let clear = () => instance#next(beltSet(), None);
 
     module Observer = {
       type action =
@@ -243,7 +254,7 @@ module Make =
         ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = children => {
         ...component,
-        initialState: () => {model: None, raw: list#raw},
+        initialState: () => {model: None, raw: Belt.Set.toArray(instance#raw)},
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {
@@ -253,7 +264,7 @@ module Make =
           Sub(
             () =>
               Callbag.(
-                list#stream
+                stream
                 |. subscribe(
                      ~next=observer => self.send(OnNext(observer)),
                      ~complete=Js.log,

@@ -23,8 +23,8 @@ let make = _children => {
     Sub(
       () =>
         Callbag.(
-          Todo.Collection.list#stream
-          |. map(observer => Belt.List.length(observer.raw))
+          Todo.Collection.stream
+          |. map(observer => Belt.Array.length(observer.raw))
           |. distinctUntilChanged
           |. subscribe(
                ~next=number => self.send(ChangeNumber(number)),

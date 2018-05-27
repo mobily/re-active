@@ -30,9 +30,8 @@ let make = _children => {
                  Js.log(todos);
                  <div>
                    <div>
-                     Belt.List.(
-                       map(todos, ((id, todo)) => <TodoItem key=id todo />)
-                       |> toArray
+                     Belt.Array.(
+                       map(todos, todo => <TodoItem key=todo#raw.id todo />)
                        |> array
                      )
                    </div>
@@ -40,10 +39,8 @@ let make = _children => {
                      (
                        string(
                          "completed: "
-                         ++ Belt.List.(
-                              keep(todos, ((_id, model)) =>
-                                model#raw.completed
-                              )
+                         ++ Belt.Array.(
+                              keep(todos, model => model#raw.completed)
                               |> length
                               |> string_of_int
                             ),
