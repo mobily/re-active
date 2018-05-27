@@ -27,11 +27,11 @@ module type Intf = {
     type t = list((Model.primaryKey, Model.observable));
     type observable = {
       .
-      next: (t, Model.t) => unit,
-      notify: Model.t => unit,
+      next: (t, option(Model.t)) => unit,
+      notify: option(Model.t) => unit,
       raw: t,
       stream: Callbag.stream(t),
-      subject: Callbag.Subject.t(Model.t),
+      subject: Callbag.Subject.t(option(Model.t)),
     };
     let list: observable;
     let initialState: observable => t;
@@ -40,7 +40,7 @@ module type Intf = {
       ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
-    /* let clear: unit => unit; */
+    let clear: unit => unit;
   };
 };
 
@@ -81,7 +81,7 @@ module Make =
       pub next = value => {
         raw = value;
         Callbag.(self#subject |. BehaviorSubject.next(value));
-        Collection.list#notify(self#raw);
+        Collection.(Some(self#raw) |. list#notify);
       };
     };
     let primaryKey = M.primaryKey;
@@ -98,11 +98,11 @@ module Make =
     type t = list((Model.primaryKey, Model.observable));
     type observable = {
       .
-      next: (t, Model.t) => unit,
-      notify: Model.t => unit,
+      next: (t, option(Model.t)) => unit,
+      notify: option(Model.t) => unit,
       raw: t,
       stream: Callbag.stream(t),
-      subject: Callbag.Subject.t(Model.t),
+      subject: Callbag.Subject.t(option(Model.t)),
     };
     let list: observable;
     let initialState: observable => t;
@@ -111,7 +111,7 @@ module Make =
       ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
-    /* let clear: unit => unit; */
+    let clear: unit => unit;
   } = {
     type t = list((Model.primaryKey, Model.observable));
     class observable (value: t) = {
@@ -122,12 +122,10 @@ module Make =
       pub subject = subject;
       pub stream =
         Callbag.(
-          subject
-          |. Subject.asStream
-          |. flatMap(_value => just(self#raw))
+          subject |. Subject.asStream |. flatMap(_value => just(self#raw))
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
-      pub next = (value, model: Model.t) => {
+      pub next = (value, model: option(Model.t)) => {
         raw = value;
         self#notify(model);
       };
@@ -144,14 +142,14 @@ module Make =
           model,
           (===),
         );
-      list#next(list', model#raw);
+      list#next(list', Some(model#raw));
     };
     let remove = model => {
       let list' =
         Belt.List.removeAssoc(list#raw, M.primaryKey(model#raw), (===));
-      list#next(list', model#raw);
+      list#next(list', Some(model#raw));
     };
-    /* let clear = () => list#next([]); */
+    let clear = () => list#next([], None);
   };
 };
 

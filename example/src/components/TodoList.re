@@ -50,6 +50,9 @@ let make = _children => {
                        )
                      )
                    </div>
+                   <div onClick=(_e => Collection.clear())>
+                     (string("clear all"))
+                   </div>
                  </div>;
                }
              )
