@@ -19,13 +19,24 @@ module type Intf = {
     };
     let primaryKey: t => primaryKey;
     let make: t => observable;
-    let initialState: observable => t;
-    let observer: observable => Callbag.stream(t);
-    let shouldUpdate:
-      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let update: (t => t, observable) => unit;
     let destroy: observable => unit;
     let save: observable => unit;
+
+    module Observer: {
+      type action =
+        | OnNext(t);
+      type state = t;
+      let make:
+        (~observable: observable, t => ReasonReact.reactElement) =>
+        ReasonReact.componentSpec(
+          state,
+          state,
+          ReasonReact.noRetainedProps,
+          ReasonReact.noRetainedProps,
+          action,
+        );
+    };
   }
   and Collection: {
     type t = list((Model.primaryKey, Model.observable));
@@ -78,13 +89,24 @@ module Make =
     };
     let primaryKey: t => primaryKey;
     let make: t => observable;
-    let initialState: observable => t;
-    let observer: observable => Callbag.stream(t);
-    let shouldUpdate:
-      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let update: (t => t, observable) => unit;
     let destroy: observable => unit;
     let save: observable => unit;
+
+    module Observer: {
+      type action =
+        | OnNext(t);
+      type state = t;
+      let make:
+        (~observable: observable, t => ReasonReact.reactElement) =>
+        ReasonReact.componentSpec(
+          state,
+          state,
+          ReasonReact.noRetainedProps,
+          ReasonReact.noRetainedProps,
+          action,
+        );
+    };
   } = {
     type t = M.t;
     type primaryKey = M.primaryKey;
@@ -103,13 +125,40 @@ module Make =
     };
     let primaryKey = M.primaryKey;
     let make = new observable;
-    let initialState = observable => observable#raw;
-    let observer = observable => observable#stream;
-    let shouldUpdate = ({ReasonReact.oldSelf, ReasonReact.newSelf}) =>
-      ! isEqual(oldSelf, newSelf);
     let update = (fn, observable) => fn(observable#raw) |> observable#next;
     let destroy = observable => Collection.remove(observable);
     let save = observable => Collection.add(observable);
+
+    module Observer = {
+      type action =
+        | OnNext(t);
+      type state = t;
+      let component = ReasonReact.reducerComponent("ReActiveObserver");
+      let make = (~observable, children) => {
+        ...component,
+        initialState: () => observable#raw,
+        shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
+        reducer: (action, _state) =>
+          switch (action) {
+          | OnNext(raw) => ReasonReact.Update(raw)
+          },
+        subscriptions: self => [
+          Sub(
+            () =>
+              Callbag.(
+                observable#stream
+                |. subscribe(
+                     ~next=raw => self.send(OnNext(raw)),
+                     ~complete=Js.log,
+                     ~error=Js.log,
+                   )
+              ),
+            Callbag.unsubscribe,
+          ),
+        ],
+        render: self => children(self.state),
+      };
+    };
   }
   and Collection: {
     type t = list((Model.primaryKey, Model.observable));
