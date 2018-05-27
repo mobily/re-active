@@ -1,6 +1,11 @@
 [@bs.module] external isEqual : ('a, 'b) => bool = "react-fast-compare";
 
-module type Impl = {type t; type primaryKey; let primaryKey: t => primaryKey;};
+module type Impl = {
+  type t;
+  type primaryKey;
+  let primaryKey: t => primaryKey;
+  let name: string;
+};
 
 module type Intf = {
   module rec Model: {
@@ -186,7 +191,7 @@ module Make =
         | OnNext(t);
       type state = t;
       let component =
-        ReasonReact.reducerComponent("ReActiveCollectionObserver");
+        ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = children => {
         ...component,
         initialState: () => initialState(list),

@@ -6,6 +6,7 @@ module Impl = {
   };
   type primaryKey = string;
   let primaryKey = (model: t) => model.id;
+  let name = "Todo";
 };
 
 module Active = ReActive.Make(Impl);
