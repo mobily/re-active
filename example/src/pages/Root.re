@@ -71,8 +71,11 @@ let make = _children => {
           }
         )
       />
-      <div onClick=(_e => Todo.Collection.fakeBulkAdd())>
-        (string("add some todos"))
+      <div onClick=(_e => Todo.Collection.fakeLazyLoading())>
+        (string("add some todos (lazy loading)"))
+      </div>
+      <div onClick=(_e => Todo.Collection.fakeEagerLoading())>
+        (string("add some todos (eager loading)"))
       </div>
       <Counter />
       <TodoList />

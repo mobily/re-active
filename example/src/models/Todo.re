@@ -29,27 +29,42 @@ module Model = {
 module Collection = {
   include Active.Collection;
 
+  let fakeNames = [|
+    "lorem",
+    "ipsum",
+    "dolor",
+    "sit",
+    "amet",
+    "no",
+    "idea",
+    "what",
+    "i'm",
+    "doing",
+  |];
+
   let fakePromise = name =>
     Js.Promise.make((~resolve, ~reject as _) =>
-      Js.Global.setTimeout(() => resolve(. name), 100) |. ignore
+      Js.Global.setTimeout(() => resolve(. name), 50) |. ignore
     );
 
-  let fakeBulkAdd = () =>
+  let fakeLazyLoading = () =>
     Callbag.(
-      fromIter([|
-        "lorem",
-        "ipsum",
-        "dolor",
-        "sit",
-        "amet",
-        "no",
-        "idea",
-        "what",
-        "i'm",
-        "doing",
-      |])
+      fromIter(fakeNames)
       |. flatMap(name => fromPromise(fakePromise(name)))
-      |. map((name) => Model.(make(default => {...default, name})))
+      |. map(name => Model.(make(default => {...default, name})))
       |. forEach(model => Model.(model |. save))
+    );
+
+  let fakeEagerLoading = () =>
+    Callbag.(
+      just(fakeNames)
+      |. flatMap(names =>
+           fromPromise(Js.Promise.all(Belt.Array.map(names, fakePromise)))
+         )
+      |. forEach(
+           Belt.Array.forEach(_, name =>
+             Model.(make(default => {...default, name}) |. save)
+           ),
+         )
     );
 };
