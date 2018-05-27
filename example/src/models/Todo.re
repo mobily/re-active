@@ -12,8 +12,6 @@ module Impl = {
     completed: false,
     starred: false,
   };
-  type primaryKey = string;
-  let primaryKey = (model: t) => model.id;
 };
 
 module Active = ReActive.Make(Impl);

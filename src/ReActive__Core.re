@@ -2,23 +2,19 @@
 
 module type Impl = {
   type t;
-  type primaryKey;
   let name: string;
-  let primaryKey: t => primaryKey;
   let default: unit => t;
 };
 
 module type Intf = {
   module rec Model: {
     type t;
-    type primaryKey;
     type observable = {
       .
       next: t => unit,
       raw: t,
       stream: Callbag.stream(t),
     };
-    let primaryKey: t => primaryKey;
     let default: unit => t;
     let make: (t => t) => observable;
     let update: (observable, t => t) => unit;
@@ -86,18 +82,16 @@ module type Intf = {
 module Make =
        (M: Impl)
        : (
-           Intf with type Model.t = M.t and type Model.primaryKey = M.primaryKey
+           Intf with type Model.t = M.t
          ) => {
   module rec Model: {
     type t = M.t;
-    type primaryKey = M.primaryKey;
     type observable = {
       .
       next: t => unit,
       raw: t,
       stream: Callbag.stream(t),
     };
-    let primaryKey: t => primaryKey;
     let default: unit => t;
     let make: (t => t) => observable;
     let update: (observable, t => t) => unit;
@@ -120,7 +114,6 @@ module Make =
     };
   } = {
     type t = M.t;
-    type primaryKey = M.primaryKey;
     class observable (value: t) = {
       as self;
       val mutable raw = value;
@@ -134,7 +127,6 @@ module Make =
         Collection.(Some(self#raw) |. instance#notify);
       };
     };
-    let primaryKey = M.primaryKey;
     let default = M.default;
     let make = fn => (new observable)(fn(default()));
     let update = (observable, fn) => fn(observable#raw) |. observable#next;
