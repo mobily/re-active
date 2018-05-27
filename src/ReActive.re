@@ -41,10 +41,6 @@ module type Intf = {
       stream: Callbag.stream(observer),
     };
     let list: observable;
-    let initialState: observable => t;
-    let observer: observable => Callbag.stream(observer);
-    let shouldUpdate:
-      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
@@ -129,10 +125,6 @@ module Make =
       stream: Callbag.stream(observer),
     };
     let list: observable;
-    let initialState: observable => t;
-    let observer: observable => Callbag.stream(observer);
-    let shouldUpdate:
-      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
     let add: Model.observable => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
@@ -176,10 +168,6 @@ module Make =
       };
     };
     let list = (new observable)([]);
-    let initialState = observable => observable#raw;
-    let observer = observable => observable#stream;
-    let shouldUpdate = ({ReasonReact.oldSelf, ReasonReact.newSelf}) =>
-      ! isEqual(oldSelf, newSelf);
     let add = model => {
       let list' =
         Belt.List.setAssoc(
@@ -205,8 +193,8 @@ module Make =
         ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = children => {
         ...component,
-        initialState: () => {model: None, raw: initialState(list)},
-        shouldUpdate: self => shouldUpdate(self),
+        initialState: () => {model: None, raw: list#raw},
+        shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {
           | OnNext(observer) => ReasonReact.Update(observer)
@@ -215,7 +203,7 @@ module Make =
           Sub(
             () =>
               Callbag.(
-                observer(list)
+                list#stream
                 |. subscribe(
                      ~next=observer => self.send(OnNext(observer)),
                      ~complete=Js.log,
