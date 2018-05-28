@@ -64,6 +64,7 @@ module type Intf = {
     let instance: observable;
     let stream: Callbag.stream(observer);
     let add: Model.observable => unit;
+    let batchAdd: models => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
 
@@ -199,6 +200,7 @@ module Make =
     let instance: observable;
     let stream: Callbag.stream(observer);
     let add: Model.observable => unit;
+    let batchAdd: models => unit;
     let remove: Model.observable => unit;
     let clear: unit => unit;
 
@@ -268,6 +270,10 @@ module Make =
     let remove = model => {
       let belt' =
         Belt.Map.remove(instance#belt, Model.primaryKey(model#raw));
+      instance#next(belt', None);
+    };
+    let batchAdd = models => {
+      let belt' = Belt.Map.mergeMany(instance#belt, models);
       instance#next(belt', None);
     };
     let clear = () => instance#next(belt(), None);
