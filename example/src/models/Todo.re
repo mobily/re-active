@@ -62,9 +62,7 @@ module Collection = {
            Belt.Array.map(names, name =>
              fakePromise(name)
              |> Js.Promise.then_(name' => {
-                  let model =
-                    Model.(make(default => {...default, name: name'}));
-                  Js.Promise.resolve((model#raw.id, model));
+                  Js.Promise.resolve(Model.(make(default => {...default, name: name'})));
                 })
            )
            |> Js.Promise.all
