@@ -42,11 +42,9 @@ module type Intf = {
   }
   and Collection: {
     module ObservableComparator: {type t = Model.observable; type identity;};
-
     type t =
       Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-      type models = array(ObservableComparator.t);
-
+    type models = array(ObservableComparator.t);
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -177,11 +175,9 @@ module Make =
   }
   and Collection: {
     module ObservableComparator: {type t = Model.observable; type identity;};
-
     type t =
       Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-      type models = array(ObservableComparator.t);
-
+    type models = array(ObservableComparator.t);
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -227,8 +223,7 @@ module Make =
       });
     type t =
       Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-      type models = array(ObservableComparator.t);
-
+    type models = array(ObservableComparator.t);
     type notifier = option(Model.t);
     type observer = {
       models,
