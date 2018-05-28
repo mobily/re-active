@@ -59,12 +59,17 @@ module Collection = {
     Callbag.(
       just(fakeNames)
       |. flatMap(names =>
-           fromPromise(Js.Promise.all(Belt.Array.map(names, fakePromise)))
+           Belt.Array.map(names, name =>
+             fakePromise(name)
+             |> Js.Promise.then_(name' => {
+                  let model =
+                    Model.(make(default => {...default, name: name'}));
+                  Js.Promise.resolve((model#raw.id, model));
+                })
+           )
+           |> Js.Promise.all
+           |> fromPromise
          )
-      |. forEach(
-           Belt.Array.forEach(_, name =>
-             Model.(make(default => {...default, name}) |. save)
-           ),
-         )
+      |. forEach(batchAdd)
     );
 };
