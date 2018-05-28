@@ -41,14 +41,12 @@ module type Intf = {
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.primaryKey; type identity;};
+    module ObservableComparator: {type t = Model.observable; type identity;};
+
     type t =
-      Belt.Map.t(
-        ObservableComparator.t,
-        Model.observable,
-        ObservableComparator.identity,
-      );
-    type models = array((ObservableComparator.t, Model.observable));
+      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
+      type models = array(ObservableComparator.t);
+
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -177,14 +175,12 @@ module Make =
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.primaryKey; type identity;};
+    module ObservableComparator: {type t = Model.observable; type identity;};
+
     type t =
-      Belt.Map.t(
-        ObservableComparator.t,
-        Model.observable,
-        ObservableComparator.identity,
-      );
-    type models = array((ObservableComparator.t, Model.observable));
+      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
+      type models = array(ObservableComparator.t);
+
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -224,16 +220,13 @@ module Make =
   } = {
     module ObservableComparator =
       Belt.Id.MakeComparable({
-        type t = Model.primaryKey;
+        type t = Model.observable;
         let cmp = compare;
       });
     type t =
-      Belt.Map.t(
-        ObservableComparator.t,
-        Model.observable,
-        ObservableComparator.identity,
-      );
-    type models = array((ObservableComparator.t, Model.observable));
+      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
+      type models = array(ObservableComparator.t);
+
     type notifier = option(Model.t);
     type observer = {
       models,
@@ -250,7 +243,7 @@ module Make =
           subject
           |. Subject.asStream
           |. map(model =>
-               {notifier: model, models: Belt.Map.toArray(self#belt)}
+               {notifier: model, models: Belt.Set.toArray(self#belt)}
              )
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
@@ -259,21 +252,21 @@ module Make =
         self#notify(model);
       };
     };
-    let belt = () => Belt.Map.make(~id=(module ObservableComparator));
+    let belt = () => Belt.Set.make(~id=(module ObservableComparator));
     let instance = (new observable)(belt());
     let stream = instance#stream;
     let add = model => {
       let belt' =
-        Belt.Map.set(instance#belt, Model.primaryKey(model#raw), model);
+        Belt.Set.add(instance#belt, model);
       instance#next(belt', None);
     };
     let remove = model => {
       let belt' =
-        Belt.Map.remove(instance#belt, Model.primaryKey(model#raw));
+        Belt.Set.remove(instance#belt, model);
       instance#next(belt', None);
     };
     let batchAdd = models => {
-      let belt' = Belt.Map.mergeMany(instance#belt, models);
+      let belt' = Belt.Set.mergeMany(instance#belt, models);
       instance#next(belt', None);
     };
     let clear = () => instance#next(belt(), None);
@@ -288,7 +281,7 @@ module Make =
         ...component,
         initialState: () => {
           notifier: None,
-          models: Belt.Map.toArray(instance#belt),
+          models: Belt.Set.toArray(instance#belt),
         },
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
