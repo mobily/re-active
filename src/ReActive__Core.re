@@ -54,7 +54,7 @@ module type Intf = {
     };
     type observable = {
       .
-      next: (t, notifier) => unit,
+      next: (~notifier: notifier=?, t) => unit,
       notify: notifier => unit,
       belt: t,
       stream: Callbag.stream(observer),
@@ -189,7 +189,7 @@ module Make =
     };
     type observable = {
       .
-      next: (t, notifier) => unit,
+      next: (~notifier: notifier=?, t) => unit,
       notify: notifier => unit,
       belt: t,
       stream: Callbag.stream(observer),
@@ -249,33 +249,31 @@ module Make =
              )
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
-      pub next = (models, model: notifier) => {
+      pub next = (~notifier=None, models) => {
         belt = models;
-        self#notify(model);
+        self#notify(notifier);
       };
     };
     let belt = () => Belt.Set.make(~id=(module ObservableComparator));
     let instance = (new observable)(belt());
     let stream = instance#stream;
     let add = model => {
-      let belt' =
-        Belt.Set.add(instance#belt, model);
-      instance#next(belt', None);
+      let belt' = Belt.Set.add(instance#belt, model);
+      instance#next(belt');
     };
     let remove = model => {
-      let belt' =
-        Belt.Set.remove(instance#belt, model);
-      instance#next(belt', None);
+      let belt' = Belt.Set.remove(instance#belt, model);
+      instance#next(belt');
     };
     let batchAdd = models => {
       let belt' = Belt.Set.mergeMany(instance#belt, models);
-      instance#next(belt', None);
+      instance#next(belt');
     };
     let batchRemove = models => {
       let belt' = Belt.Set.removeMany(instance#belt, models);
-      instance#next(belt', None);
+      instance#next(belt');
     };
-    let clear = () => instance#next(belt(), None);
+    let clear = () => instance#next(belt());
 
     module Observer = {
       type action =
