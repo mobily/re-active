@@ -73,10 +73,21 @@ let make = _children => {
                todos => {
                  Js.log2("starred", todos);
                  <div>
-                   Belt.Array.(
-                     map(todos, todo => <TodoItem key=todo#raw.id todo />)
-                     |> array
-                   )
+                   <div>
+                     Belt.Array.(
+                       map(todos, todo => <TodoItem key=todo#raw.id todo />)
+                       |> array
+                     )
+                   </div>
+                   <div
+                     onClick=(
+                       _e =>
+                         Collection.batchRemove(
+                           todos |. Belt.Array.keep(todo => todo#raw.completed),
+                         )
+                     )>
+                     (string("remove starred and completed todos"))
+                   </div>
                  </div>;
                }
              )

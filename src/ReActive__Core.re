@@ -64,6 +64,7 @@ module type Intf = {
     let add: Model.observable => unit;
     let batchAdd: models => unit;
     let remove: Model.observable => unit;
+    let batchRemove: models => unit;
     let clear: unit => unit;
 
     module Observer: {
@@ -198,6 +199,7 @@ module Make =
     let add: Model.observable => unit;
     let batchAdd: models => unit;
     let remove: Model.observable => unit;
+    let batchRemove: models => unit;
     let clear: unit => unit;
 
     module Observer: {
@@ -267,6 +269,10 @@ module Make =
     };
     let batchAdd = models => {
       let belt' = Belt.Set.mergeMany(instance#belt, models);
+      instance#next(belt', None);
+    };
+    let batchRemove = models => {
+      let belt' = Belt.Set.removeMany(instance#belt, models);
       instance#next(belt', None);
     };
     let clear = () => instance#next(belt(), None);
