@@ -263,12 +263,12 @@ module Make =
     let add = model => {
       let belt' =
         Belt.Map.set(instance#belt, Model.primaryKey(model#raw), model);
-      instance#next(belt', Some(model#raw));
+      instance#next(belt', None);
     };
     let remove = model => {
       let belt' =
         Belt.Map.remove(instance#belt, Model.primaryKey(model#raw));
-      instance#next(belt', Some(model#raw));
+      instance#next(belt', None);
     };
     let clear = () => instance#next(belt(), None);
 
