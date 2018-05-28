@@ -61,9 +61,11 @@ module Collection = {
       |. flatMap(names =>
            Belt.Array.map(names, name =>
              fakePromise(name)
-             |> Js.Promise.then_(name' => {
-                  Js.Promise.resolve(Model.(make(default => {...default, name: name'})));
-                })
+             |> Js.Promise.then_(name' =>
+                  Js.Promise.resolve(
+                    Model.(make(default => {...default, name: name'})),
+                  )
+                )
            )
            |> Js.Promise.all
            |> fromPromise
