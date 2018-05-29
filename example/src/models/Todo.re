@@ -29,29 +29,36 @@ module Model = {
 module Collection = {
   include Active.Collection;
 
-  let fakeNames = [|
-    "lorem",
-    "ipsum",
-    "dolor",
-    "sit",
-    "amet",
-    "no",
-    "idea",
-    "what",
-    "i'm",
-    "doing",
-  |];
+  let fakeNames =
+    Belt.Array.(
+      range(0, 1000) |. map(_i => Random.int(3000) |> string_of_int)
+    );
 
   let fakePromise = name =>
     Js.Promise.make((~resolve, ~reject as _) =>
-      Js.Global.setTimeout(() => resolve(. name), 50) |. ignore
+      Js.Global.setTimeout(
+        () =>
+          resolve(.
+            Model.(
+              make(default =>
+                {
+                  ...default,
+                  completed: Random.bool(),
+                  starred: Random.bool(),
+                  name,
+                }
+              )
+            ),
+          ),
+        50,
+      )
+      |. ignore
     );
 
   let fakeLazyLoading = () =>
     Callbag.(
       fromIter(fakeNames)
-      |. flatMap(name => fromPromise(fakePromise(name)))
-      |. map(name => Model.(make(default => {...default, name})))
+      |. flatMap(name => fakePromise(name) |. fromPromise)
       |. forEach(model => Model.(model |. save))
     );
 
@@ -59,16 +66,7 @@ module Collection = {
     Callbag.(
       just(fakeNames)
       |. flatMap(names =>
-           Belt.Array.map(names, name =>
-             fakePromise(name)
-             |> Js.Promise.then_(name' =>
-                  Js.Promise.resolve(
-                    Model.(make(default => {...default, name: name'})),
-                  )
-                )
-           )
-           |> Js.Promise.all
-           |> fromPromise
+           Belt.Array.map(names, fakePromise) |> Js.Promise.all |> fromPromise
          )
       |. forEach(batchAdd)
     );
