@@ -64,6 +64,7 @@ module type Intf = {
     let remove: Model.observable => unit;
     let batchRemove: models => unit;
     let clear: unit => unit;
+    let batchUpdate: (models, Model.t => Model.t) => unit;
 
     module Observer: {
       type action =
@@ -197,6 +198,7 @@ module Make =
     let remove: Model.observable => unit;
     let batchRemove: models => unit;
     let clear: unit => unit;
+    let batchUpdate: (models, Model.t => Model.t) => unit;
 
     module Observer: {
       type action =
@@ -267,6 +269,10 @@ module Make =
     let batchRemove = models => {
       let belt' = Belt.Set.removeMany(instance#belt, models);
       instance#next(belt');
+    };
+    let batchUpdate = (models, fn) => {
+      Belt.Array.forEach(models, model => Model.(model |. update(default => fn(default))));
+      instance#next(instance#belt);
     };
     let clear = () => instance#next(belt());
 
