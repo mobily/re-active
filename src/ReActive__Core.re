@@ -271,8 +271,8 @@ module Make =
       instance#next(belt');
     };
     let batchUpdate = (models, fn) => {
-      Belt.Array.forEach(models, model => Model.(model |. update(default => fn(default))));
-      instance#next(instance#belt);
+      Belt.Array.forEach(models, model => Model.(model |. update(fn)));
+      instance#notify(None);
     };
     let clear = () => instance#next(belt());
 

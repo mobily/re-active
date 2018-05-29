@@ -70,20 +70,18 @@ let make = _children => {
                      <div
                        onClick=(
                          _e =>
-                           Collection.batchRemove(
-                             todos
-                             |. Belt.Array.keep(todo => todo#raw.completed),
-                           )
+                           todos
+                           |. Belt.Array.keep(todo => todo#raw.completed)
+                           |. Collection.batchRemove
                        )>
-                       (string("remove todos"))
+                       (string("remove completed todos"))
                      </div>
                      <div
                        onClick=(
                          _e =>
                            todos
-                           |. Belt.Array.keep(todo => todo#raw.completed)
-                           |. Collection.batchUpdate(default =>
-                                {...default, completed: false}
+                           |. Collection.batchUpdate(model =>
+                                {...model, completed: ! model.completed}
                               )
                        )>
                        (string("toggle completed"))
