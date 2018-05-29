@@ -244,6 +244,7 @@ module Make =
           |. map(model =>
                {notifier: model, models: Belt.Set.toArray(self#belt)}
              )
+          |. share
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
       pub next = (~notifier=None, models) => {
