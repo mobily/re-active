@@ -54,7 +54,7 @@ module type Intf = {
       .
       next: (~notifier: notifier=?, set) => unit,
       notify: notifier => unit,
-      belt: set,
+      set: set,
       stream: Callbag.stream(observer),
     };
     let instance: t;
@@ -189,7 +189,7 @@ module Make =
       .
       next: (~notifier: notifier=?, set) => unit,
       notify: notifier => unit,
-      belt: set,
+      set: set,
       stream: Callbag.stream(observer),
     };
     let instance: t;
@@ -234,49 +234,49 @@ module Make =
     };
     class t (models: set) = {
       as self;
-      val mutable belt = models;
+      val mutable set = models;
       val subject = Callbag.Subject.make();
-      pub belt = belt;
+      pub set = set;
       pri subject = subject;
       pub stream =
         Callbag.(
           subject
           |. Subject.asStream
           |. map(model =>
-               {notifier: model, models: Belt.Set.toArray(self#belt)}
+               {notifier: model, models: Belt.Set.toArray(self#set)}
              )
           |. share
         );
       pub notify = model => Callbag.(self#subject |. Subject.next(model));
       pub next = (~notifier=None, models) => {
-        belt = models;
+        set = models;
         self#notify(notifier);
       };
     };
-    let belt = () => Belt.Set.make(~id=(module ObservableComparator));
-    let instance = (new t)(belt());
+    let set = () => Belt.Set.make(~id=(module ObservableComparator));
+    let instance = (new t)(set());
     let stream = instance#stream;
     let add = model => {
-      let belt' = Belt.Set.add(instance#belt, model);
-      instance#next(belt');
+      let set = Belt.Set.add(instance#set, model);
+      instance#next(set);
     };
     let remove = model => {
-      let belt' = Belt.Set.remove(instance#belt, model);
-      instance#next(belt');
+      let set = Belt.Set.remove(instance#set, model);
+      instance#next(set);
     };
     let batchAdd = models => {
-      let belt' = Belt.Set.mergeMany(instance#belt, models);
-      instance#next(belt');
+      let set = Belt.Set.mergeMany(instance#set, models);
+      instance#next(set);
     };
     let batchRemove = models => {
-      let belt' = Belt.Set.removeMany(instance#belt, models);
-      instance#next(belt');
+      let set = Belt.Set.removeMany(instance#set, models);
+      instance#next(set);
     };
     let batchUpdate = (models, fn) => {
       Belt.Array.forEach(models, model => Model.(model |. update(fn)));
       instance#notify(None);
     };
-    let clear = () => instance#next(belt());
+    let clear = () => instance#next(set());
 
     module Observer = {
       type action =
@@ -288,7 +288,7 @@ module Make =
         ...component,
         initialState: () => {
           notifier: None,
-          models: Belt.Set.toArray(instance#belt),
+          models: Belt.Set.toArray(instance#set),
         },
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
