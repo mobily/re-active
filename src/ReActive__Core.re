@@ -10,27 +10,27 @@ module type Impl = {
 
 module type Intf = {
   module rec Model: {
-    type t;
+    type raw;
     type primaryKey;
-    type observable = {
+    type t = {
       .
-      next: t => unit,
-      raw: t,
-      stream: Callbag.stream(t),
+      next: raw => unit,
+      raw: raw,
+      stream: Callbag.stream(raw),
     };
-    let default: unit => t;
-    let primaryKey: t => primaryKey;
-    let make: (t => t) => observable;
-    let update: (observable, t => t) => unit;
-    let destroy: observable => unit;
-    let save: observable => unit;
+    let default: unit => raw;
+    let primaryKey: raw => primaryKey;
+    let make: (raw => raw) => t;
+    let update: (t, raw => raw) => unit;
+    let destroy: t => unit;
+    let save: t => unit;
 
     module Observer: {
       type action =
-        | OnNext(t);
-      type state = t;
+        | OnNext(raw);
+      type state = raw;
       let make:
-        (~observable: observable, t => ReasonReact.reactElement) =>
+        (~observable: t, raw => ReasonReact.reactElement) =>
         ReasonReact.componentSpec(
           state,
           state,
@@ -41,30 +41,30 @@ module type Intf = {
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.observable; type identity;};
-    type t =
+    module ObservableComparator: {type t = Model.t; type identity;};
+    type set =
       Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
     type models = array(ObservableComparator.t);
-    type notifier = option(Model.t);
+    type notifier = option(Model.raw);
     type observer = {
       models,
       notifier,
     };
-    type observable = {
+    type t = {
       .
-      next: (~notifier: notifier=?, t) => unit,
+      next: (~notifier: notifier=?, set) => unit,
       notify: notifier => unit,
-      belt: t,
+      belt: set,
       stream: Callbag.stream(observer),
     };
-    let instance: observable;
+    let instance: t;
     let stream: Callbag.stream(observer);
-    let add: Model.observable => unit;
+    let add: Model.t => unit;
     let batchAdd: models => unit;
-    let remove: Model.observable => unit;
+    let remove: Model.t => unit;
     let batchRemove: models => unit;
     let clear: unit => unit;
-    let batchUpdate: (models, Model.t => Model.t) => unit;
+    let batchUpdate: (models, Model.raw => Model.raw) => unit;
 
     module Observer: {
       type action =
@@ -89,30 +89,31 @@ module type Intf = {
 module Make =
        (M: Impl)
        : (
-           Intf with type Model.t = M.t and type Model.primaryKey = M.primaryKey
+           Intf with
+             type Model.raw = M.t and type Model.primaryKey = M.primaryKey
          ) => {
   module rec Model: {
-    type t = M.t;
+    type raw = M.t;
     type primaryKey = M.primaryKey;
-    type observable = {
+    type t = {
       .
-      next: t => unit,
-      raw: t,
-      stream: Callbag.stream(t),
+      next: raw => unit,
+      raw: raw,
+      stream: Callbag.stream(raw),
     };
-    let default: unit => t;
-    let primaryKey: t => primaryKey;
-    let make: (t => t) => observable;
-    let update: (observable, t => t) => unit;
-    let destroy: observable => unit;
-    let save: observable => unit;
+    let default: unit => raw;
+    let primaryKey: raw => primaryKey;
+    let make: (raw => raw) => t;
+    let update: (t, raw => raw) => unit;
+    let destroy: t => unit;
+    let save: t => unit;
 
     module Observer: {
       type action =
-        | OnNext(t);
-      type state = t;
+        | OnNext(raw);
+      type state = raw;
       let make:
-        (~observable: observable, t => ReasonReact.reactElement) =>
+        (~observable: t, raw => ReasonReact.reactElement) =>
         ReasonReact.componentSpec(
           state,
           state,
@@ -122,9 +123,9 @@ module Make =
         );
     };
   } = {
-    type t = M.t;
+    type raw = M.t;
     type primaryKey = M.primaryKey;
-    class observable (value: t) = {
+    class t (value: raw) = {
       as self;
       val mutable raw = value;
       val subject = Callbag.BehaviorSubject.make(value);
@@ -139,15 +140,15 @@ module Make =
     };
     let default = M.default;
     let primaryKey = M.primaryKey;
-    let make = fn => (new observable)(fn(default()));
+    let make = fn => (new t)(fn(default()));
     let update = (observable, fn) => fn(observable#raw) |. observable#next;
     let destroy = observable => Collection.remove(observable);
     let save = observable => Collection.add(observable);
 
     module Observer = {
       type action =
-        | OnNext(t);
-      type state = t;
+        | OnNext(raw);
+      type state = raw;
       let component =
         ReasonReact.reducerComponent(M.name ++ "ReActiveModelObserver");
       let make = (~observable, children) => {
@@ -175,30 +176,30 @@ module Make =
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.observable; type identity;};
-    type t =
+    module ObservableComparator: {type t = Model.t; type identity;};
+    type set =
       Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
     type models = array(ObservableComparator.t);
-    type notifier = option(Model.t);
+    type notifier = option(Model.raw);
     type observer = {
       models,
       notifier,
     };
-    type observable = {
+    type t = {
       .
-      next: (~notifier: notifier=?, t) => unit,
+      next: (~notifier: notifier=?, set) => unit,
       notify: notifier => unit,
-      belt: t,
+      belt: set,
       stream: Callbag.stream(observer),
     };
-    let instance: observable;
+    let instance: t;
     let stream: Callbag.stream(observer);
-    let add: Model.observable => unit;
+    let add: Model.t => unit;
     let batchAdd: models => unit;
-    let remove: Model.observable => unit;
+    let remove: Model.t => unit;
     let batchRemove: models => unit;
     let clear: unit => unit;
-    let batchUpdate: (models, Model.t => Model.t) => unit;
+    let batchUpdate: (models, Model.raw => Model.raw) => unit;
 
     module Observer: {
       type action =
@@ -220,18 +221,18 @@ module Make =
   } = {
     module ObservableComparator =
       Belt.Id.MakeComparable({
-        type t = Model.observable;
+        type t = Model.t;
         let cmp = compare;
       });
-    type t =
+    type set =
       Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
     type models = array(ObservableComparator.t);
-    type notifier = option(Model.t);
+    type notifier = option(Model.raw);
     type observer = {
       models,
       notifier,
     };
-    class observable (models: t) = {
+    class t (models: set) = {
       as self;
       val mutable belt = models;
       val subject = Callbag.Subject.make();
@@ -253,7 +254,7 @@ module Make =
       };
     };
     let belt = () => Belt.Set.make(~id=(module ObservableComparator));
-    let instance = (new observable)(belt());
+    let instance = (new t)(belt());
     let stream = instance#stream;
     let add = model => {
       let belt' = Belt.Set.add(instance#belt, model);
