@@ -22,7 +22,7 @@
     "concurrently": "^3.5.1",
     "html-webpack-plugin": "^3.2.0",
     "koa-connect": "^2.0.1",
-    "webpack": "^4.9.1",
+    "webpack": "^4.10.2",
     "webpack-serve": "0.3.2"
   }
 }
