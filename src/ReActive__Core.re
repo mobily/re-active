@@ -41,10 +41,10 @@ module type Intf = {
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.t; type identity;};
+    module CollectionComparator: {type t = Model.t; type identity;};
     type set =
-      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-    type models = array(ObservableComparator.t);
+      Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
+    type models = array(CollectionComparator.t);
     type notifier = option(Model.raw);
     type observer = {
       models,
@@ -176,10 +176,10 @@ module Make =
     };
   }
   and Collection: {
-    module ObservableComparator: {type t = Model.t; type identity;};
+    module CollectionComparator: {type t = Model.t; type identity;};
     type set =
-      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-    type models = array(ObservableComparator.t);
+      Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
+    type models = array(CollectionComparator.t);
     type notifier = option(Model.raw);
     type observer = {
       models,
@@ -219,14 +219,14 @@ module Make =
         );
     };
   } = {
-    module ObservableComparator =
+    module CollectionComparator =
       Belt.Id.MakeComparable({
         type t = Model.t;
         let cmp = compare;
       });
     type set =
-      Belt.Set.t(ObservableComparator.t, ObservableComparator.identity);
-    type models = array(ObservableComparator.t);
+      Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
+    type models = array(CollectionComparator.t);
     type notifier = option(Model.raw);
     type observer = {
       models,
@@ -253,7 +253,7 @@ module Make =
         self#notify(notifier);
       };
     };
-    let set = () => Belt.Set.make(~id=(module ObservableComparator));
+    let set = () => Belt.Set.make(~id=(module CollectionComparator));
     let instance = (new t)(set());
     let stream = instance#stream;
     let add = model => {
