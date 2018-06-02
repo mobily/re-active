@@ -52,9 +52,9 @@ let make = _children => {
           <Collection.Observer
             observer=(
               stream =>
-                Callbag.(
+                Wonka.(
                   stream
-                  |. map(({models, _}) =>
+                  |> map(({models, _}: Collection.observer) =>
                        Collection.{
                          notifier: None,
                          models:

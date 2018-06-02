@@ -5,7 +5,6 @@
     "-bs-super-errors"
   ],
   "bs-dependencies": [
-    "@mobily/bs-callbag",
     "reason-react"
   ],
   "bs-dev-dependencies": [
@@ -17,6 +16,7 @@
   },
   "suffix": ".bs.js",
   "sources": [
+    "../wonka/src",
     "src"
   ],
   "refmt": 3,

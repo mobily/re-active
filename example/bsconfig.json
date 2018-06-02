@@ -5,6 +5,7 @@
   },
   "sources": [
     "../src",
+    "../../wonka/src",
     {
       "dir": "src",
       "subdirs": true
@@ -18,7 +19,6 @@
   "namespace": true,
   "bs-dependencies": [
     "@ncthbrt/re-secure-random-string",
-    "@mobily/bs-callbag",
     "reason-react",
     "bs-css"
   ],

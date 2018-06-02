@@ -10,3 +10,5 @@ dist/
 
 *.log
 *.bs.js
+
+example/wonka/

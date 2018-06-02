@@ -19,22 +19,19 @@ let make = _children => {
     switch (action) {
     | ChangeNumber(number) => Update({number: number})
     },
-  subscriptions: self => [
-    Sub(
-      () =>
-        Callbag.(
-          Todo.Collection.stream
-          |. map(({models, _}) => Belt.Array.length(models))
-          |. distinctUntilChanged
-          |. subscribe(
-               ~next=number => self.send(ChangeNumber(number)),
-               ~complete=Js.log,
-               ~error=Js.log,
-             )
-        ),
-      Callbag.unsubscribe,
-    ),
-  ],
+  didMount: self => {
+    let dispose =
+      Wonka.(
+        Todo.Collection.stream
+        |> map(({models, _}: Todo.Collection.observer) =>
+             Belt.Array.length(models)
+           )
+        /* |> distinctUntilChanged */
+        |> subscribe(number => self.send(ChangeNumber(number)))
+      );
+
+    self.onUnmount(dispose);
+  },
   render: self =>
     <div className=Style.root>
       (string(self.state.number |. string_of_int))

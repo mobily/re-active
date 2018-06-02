@@ -1,3 +1,5 @@
+open ReActive__Types;
+
 [@bs.module] external isEqual : ('a, 'b) => bool = "react-fast-compare";
 
 module type Impl = {
@@ -16,7 +18,7 @@ module type Intf = {
       .
       next: raw => unit,
       raw: raw,
-      stream: Callbag.stream(raw),
+      stream: stream(raw),
     };
     let default: unit => raw;
     let primaryKey: raw => primaryKey;
@@ -55,10 +57,10 @@ module type Intf = {
       next: (~notifier: notifier=?, set) => unit,
       notify: notifier => unit,
       set: set,
-      stream: Callbag.stream(observer),
+      stream: stream(observer),
     };
     let instance: t;
-    let stream: Callbag.stream(observer);
+    let stream: stream(observer);
     let add: Model.t => unit;
     let batchAdd: models => unit;
     let remove: Model.t => unit;
@@ -72,7 +74,7 @@ module type Intf = {
       type state = observer;
       let make:
         (
-          ~observer: Callbag.stream(observer) => Callbag.stream(observer)=?,
+          ~observer: stream(observer) => stream(observer)=?,
           models => ReasonReact.reactElement
         ) =>
         ReasonReact.componentSpec(
@@ -99,7 +101,7 @@ module Make =
       .
       next: raw => unit,
       raw: raw,
-      stream: Callbag.stream(raw),
+      stream: stream(raw),
     };
     let default: unit => raw;
     let primaryKey: raw => primaryKey;
@@ -128,13 +130,13 @@ module Make =
     class t (value: raw) = {
       as self;
       val mutable raw = value;
-      val subject = Callbag.BehaviorSubject.make(value);
+      val subject = Wonka.Subject.make();
       pub raw = raw;
       pri subject = subject;
-      pub stream = Callbag.(subject |. BehaviorSubject.asStream);
+      pub stream = Wonka.(subject |> Subject.toStream);
       pub next = value => {
         raw = value;
-        Callbag.(self#subject |. BehaviorSubject.next(value));
+        Wonka.(self#subject |> Subject.next(value));
         Collection.(Some(self#raw) |. instance#notify);
       };
     };
@@ -161,13 +163,8 @@ module Make =
           },
         didMount: self => {
           let dispose =
-            Callbag.(
-              observable#stream
-              |. subscribe(
-                   ~next=raw => self.send(OnNext(raw)),
-                   ~complete=Js.log,
-                   ~error=Js.log,
-                 )
+            Wonka.(
+              observable#stream |> subscribe(raw => self.send(OnNext(raw)))
             );
           self.onUnmount(dispose);
         },
@@ -190,10 +187,10 @@ module Make =
       next: (~notifier: notifier=?, set) => unit,
       notify: notifier => unit,
       set: set,
-      stream: Callbag.stream(observer),
+      stream: stream(observer),
     };
     let instance: t;
-    let stream: Callbag.stream(observer);
+    let stream: stream(observer);
     let add: Model.t => unit;
     let batchAdd: models => unit;
     let remove: Model.t => unit;
@@ -207,7 +204,7 @@ module Make =
       type state = observer;
       let make:
         (
-          ~observer: Callbag.stream(observer) => Callbag.stream(observer)=?,
+          ~observer: stream(observer) => stream(observer)=?,
           models => ReasonReact.reactElement
         ) =>
         ReasonReact.componentSpec(
@@ -235,19 +232,19 @@ module Make =
     class t (models: set) = {
       as self;
       val mutable set = models;
-      val subject = Callbag.Subject.make();
+      val subject = Wonka.Subject.make();
       pub set = set;
       pri subject = subject;
       pub stream =
-        Callbag.(
+        Wonka.(
           subject
-          |. Subject.asStream
-          |. map(model =>
+          |> Subject.toStream
+          |> map(model =>
                {notifier: model, models: Belt.Set.toArray(self#set)}
              )
-          |. share
+          |> share
         );
-      pub notify = model => Callbag.(self#subject |. Subject.next(model));
+      pub notify = model => Wonka.(self#subject |> Subject.next(model));
       pub next = (~notifier=None, models) => {
         set = models;
         self#notify(notifier);
@@ -297,13 +294,9 @@ module Make =
           },
         didMount: self => {
           let dispose =
-            Callbag.(
+            Wonka.(
               observer(stream)
-              |. subscribe(
-                   ~next=observer => self.send(OnNext(observer)),
-                   ~complete=Js.log,
-                   ~error=Js.log,
-                 )
+              |> subscribe(observer => self.send(OnNext(observer)))
             );
           self.onUnmount(dispose);
         },

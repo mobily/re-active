@@ -56,18 +56,22 @@ module Collection = {
     );
 
   let fakeLazyLoading = () =>
-    Callbag.(
-      fromIter(fakeNames)
-      |. flatMap(name => fakePromise(name) |. fromPromise)
-      |. forEach(model => Model.(model |. save))
+    Wonka.(
+      fromArray(fakeNames)
+      |> map(name => fakePromise(name) |> WonkaJs.fromPromise)
+      |> flatten
+      |> forEach(model => Model.(model |. save))
     );
 
   let fakeEagerLoading = () =>
-    Callbag.(
-      just(fakeNames)
-      |. flatMap(names =>
-           Belt.Array.map(names, fakePromise) |> Js.Promise.all |> fromPromise
+    Wonka.(
+      fromValue(fakeNames)
+      |> map(names =>
+           Belt.Array.map(names, fakePromise)
+           |> Js.Promise.all
+           |> WonkaJs.fromPromise
          )
-      |. forEach(batchAdd)
+      |> flatten
+      |> forEach(batchAdd)
     );
 };

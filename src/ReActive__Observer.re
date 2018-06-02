@@ -1,9 +1,11 @@
+open ReActive__Types;
+
 module Observer = {
   module type Observer = {
     type t;
     type observable;
     let name: string;
-    let observer: observable => Callbag.stream(t);
+    let observer: observable => stream(t);
     let initialState: observable => t;
     let shouldUpdate:
       ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
@@ -52,13 +54,9 @@ module Observer = {
         },
       didMount: self => {
         let dispose =
-          Callbag.(
+          Wonka.(
             M.observer(observable)
-            |. subscribe(
-                 ~next=raw => self.send(OnNext(raw)),
-                 ~complete=Js.log,
-                 ~error=Js.log,
-               )
+            |> subscribe(raw => self.send(OnNext(raw)))
           );
         self.onUnmount(dispose);
       },
