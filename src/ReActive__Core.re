@@ -130,13 +130,13 @@ module Make =
     class t (value: raw) = {
       as self;
       val mutable raw = value;
-      val subject = Wonka.Subject.make();
+      val subject = Wonka.makeSubject();
       pub raw = raw;
       pri subject = subject;
-      pub stream = Wonka.(subject |> Subject.toStream);
+      pub stream = subject.observer;
       pub next = value => {
         raw = value;
-        Wonka.(self#subject |> Subject.next(value));
+        self#subject.next(value);
         Collection.(Some(self#raw) |. instance#notify);
       };
     };
@@ -232,19 +232,18 @@ module Make =
     class t (models: set) = {
       as self;
       val mutable set = models;
-      val subject = Wonka.Subject.make();
+      val subject = Wonka.makeSubject();
       pub set = set;
       pri subject = subject;
       pub stream =
         Wonka.(
-          subject
-          |> Subject.toStream
+          subject.observer
           |> map(model =>
                {notifier: model, models: Belt.Set.toArray(self#set)}
              )
           |> share
         );
-      pub notify = model => Wonka.(self#subject |> Subject.next(model));
+      pub notify = model => self#subject.next(model);
       pub next = (~notifier=None, models) => {
         set = models;
         self#notify(notifier);
