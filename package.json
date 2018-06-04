@@ -28,7 +28,8 @@
   "dependencies": {
     "@mobily/bs-callbag": "^0.3.2",
     "react-fast-compare": "^1.0.0",
-    "reason-react": "^0.4.2"
+    "reason-react": "^0.4.2",
+    "wonka": "https://github.com/mobily/wonka#subject"
   },
   "devDependencies": {
     "@glennsl/bs-jest": "^0.4.2",

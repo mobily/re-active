@@ -3401,6 +3401,10 @@ window-size@0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/window-size/-/window-size-0.1.0.tgz#5438cd2ea93b202efa3a19fe8887aee7c94f9c9d"
 
+"wonka@https://github.com/mobily/wonka#subject":
+  version "0.1.0-2"
+  resolved "https://github.com/mobily/wonka#1f7428cd9bc3a4f10cedfb71daa1ab4b7d8a71b9"
+
 wordwrap@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/wordwrap/-/wordwrap-0.0.2.tgz#b79669bb42ecb409f83d583cad52ca17eaa1643f"

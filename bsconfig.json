@@ -5,6 +5,7 @@
     "-bs-super-errors"
   ],
   "bs-dependencies": [
+    "wonka",
     "reason-react"
   ],
   "bs-dev-dependencies": [
@@ -16,7 +17,6 @@
   },
   "suffix": ".bs.js",
   "sources": [
-    "../wonka/src",
     "src"
   ],
   "refmt": 3,
