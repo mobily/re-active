@@ -31,7 +31,7 @@ module Collection = {
 
   let fakeNames =
     Belt.Array.(
-      range(0, 1000) |. map(_i => Random.int(3000) |> string_of_int)
+      range(0, 100) |. map(_i => Random.int(3000) |> string_of_int)
     );
 
   let fakePromise = name =>
