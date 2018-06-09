@@ -21,9 +21,13 @@ module Style = {
 type action =
   | ChangeText(string)
   | AddTodo
-  | ClearTodo;
+  | ClearTodo
+  | ToggleVisibility(bool);
 
-type state = {text: string};
+type state = {
+  text: string,
+  hidden: bool,
+};
 
 let component = reducerComponent("Root");
 
@@ -33,23 +37,24 @@ let getTargetValue = event => ReactDOMRe.domElementToObj(
 
 let make = _children => {
   ...component,
-  initialState: () => {text: ""},
+  initialState: () => {text: "", hidden: false},
   reducer: (action, state) =>
     switch (action) {
-    | ChangeText(text) => Update({text: text})
+    | ChangeText(text) => Update({...state, text})
     | AddTodo =>
       switch (String.trim(state.text)) {
       | "" => ReasonReact.NoUpdate
       | text =>
         ReasonReact.UpdateWithSideEffects(
-          {text: ""},
+          {...state, text: ""},
           (
             _self =>
               Todo.Model.(make(default => {...default, name: text}) |. save)
           ),
         )
       }
-    | ClearTodo => Update({text: ""})
+    | ClearTodo => Update({...state, text: ""})
+    | ToggleVisibility(hidden) => Update({...state, hidden})
     },
   render: self =>
     <div className=Style.root>
@@ -71,6 +76,9 @@ let make = _children => {
           }
         )
       />
+      <div onClick=(_e => self.send(ToggleVisibility(! self.state.hidden)))>
+        (string("show/hide"))
+      </div>
       <div onClick=(_e => Todo.Collection.fakeLazyLoading())>
         (string("add some todos (lazy loading)"))
       </div>
@@ -78,6 +86,6 @@ let make = _children => {
         (string("add some todos (eager loading)"))
       </div>
       <Counter />
-      <TodoList />
+      (self.state.hidden ? null : <TodoList />)
     </div>,
 };
