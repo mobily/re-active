@@ -268,10 +268,8 @@ module Make =
       let set = Belt.Set.removeMany(instance#set, models);
       instance#next(set);
     };
-    let batchUpdate = (models, fn) => {
+    let batchUpdate = (models, fn) =>
       Belt.Array.forEach(models, model => Model.(model |. update(fn)));
-      instance#notify(None);
-    };
     let clear = () => instance#next(set());
 
     module Observer = {
