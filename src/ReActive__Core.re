@@ -280,10 +280,7 @@ module Make =
         ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = (~observer=stream => stream, children) => {
         ...component,
-        initialState: () => {
-          notifier: None,
-          models: Belt.Set.toArray(instance#set),
-        },
+        initialState: () => {notifier: None, models: [||]},
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {
@@ -296,6 +293,7 @@ module Make =
               |> subscribe(observer => self.send(OnNext(observer)))
             );
           self.onUnmount(dispose);
+          instance#notify(None);
         },
         render: self => children(self.state.models),
       };
