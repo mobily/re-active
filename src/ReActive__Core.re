@@ -47,7 +47,10 @@ module type Intf = {
     type set =
       Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
     type models = array(CollectionComparator.t);
-    type notifier = option(Model.raw);
+    type notifier =
+      | Update(Model.raw)
+      | Touch
+      | Idle;
     type observer = {
       models,
       notifier,
@@ -137,7 +140,7 @@ module Make =
       pub next = value => {
         raw = value;
         self#subject.next(value);
-        Collection.(Some(self#raw) |. instance#notify);
+        Collection.(Update(self#raw) |. instance#notify);
       };
     };
     let default = M.default;
@@ -177,7 +180,10 @@ module Make =
     type set =
       Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
     type models = array(CollectionComparator.t);
-    type notifier = option(Model.raw);
+    type notifier =
+      | Update(Model.raw)
+      | Touch
+      | Idle;
     type observer = {
       models,
       notifier,
@@ -224,7 +230,10 @@ module Make =
     type set =
       Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
     type models = array(CollectionComparator.t);
-    type notifier = option(Model.raw);
+    type notifier =
+      | Update(Model.raw)
+      | Touch
+      | Idle;
     type observer = {
       models,
       notifier,
@@ -238,13 +247,11 @@ module Make =
       pub stream =
         Wonka.(
           subject.observer
-          |> map(model =>
-               {notifier: model, models: Belt.Set.toArray(self#set)}
-             )
+          |> map(notifier => {notifier, models: Belt.Set.toArray(self#set)})
           |> share
         );
-      pub notify = model => self#subject.next(model);
-      pub next = (~notifier=None, models) => {
+      pub notify = notifier => self#subject.next(notifier);
+      pub next = (~notifier=Touch, models) => {
         set = models;
         self#notify(notifier);
       };
@@ -280,7 +287,7 @@ module Make =
         ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = (~observer=stream => stream, children) => {
         ...component,
-        initialState: () => {notifier: None, models: [||]},
+        initialState: () => {notifier: Idle, models: [||]},
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {
@@ -293,7 +300,7 @@ module Make =
               |> subscribe(observer => self.send(OnNext(observer)))
             );
           self.onUnmount(dispose);
-          instance#notify(None);
+          instance#notify(Touch);
         },
         render: self => children(self.state.models),
       };

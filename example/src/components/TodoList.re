@@ -54,9 +54,9 @@ let make = _children => {
               stream =>
                 Wonka.(
                   stream
-                  |> map(({models, _}: Collection.observer) =>
+                  |> map(observer =>
                        Collection.{
-                         notifier: None,
+                         ...observer,
                          models:
                            Belt.Array.keep(models, todo => todo#raw.starred),
                        }
