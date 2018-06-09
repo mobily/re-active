@@ -72,6 +72,6 @@ module Collection = {
            |> WonkaJs.fromPromise
          )
       |> flatten
-      |> forEach(batchAdd)
+      |> forEach(addMany)
     );
 };

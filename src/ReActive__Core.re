@@ -49,8 +49,7 @@ module type Intf = {
     type models = array(CollectionComparator.t);
     type notifier =
       | Update(Model.raw)
-      | Touch
-      | Idle;
+      | Touch;
     type observer = {
       models,
       notifier,
@@ -65,11 +64,11 @@ module type Intf = {
     let instance: t;
     let stream: stream(observer);
     let add: Model.t => unit;
-    let batchAdd: models => unit;
+    let addMany: models => unit;
     let remove: Model.t => unit;
-    let batchRemove: models => unit;
+    let removeMany: models => unit;
     let clear: unit => unit;
-    let batchUpdate: (models, Model.raw => Model.raw) => unit;
+    let updateMany: (models, Model.raw => Model.raw) => unit;
 
     module Observer: {
       type action =
@@ -182,8 +181,7 @@ module Make =
     type models = array(CollectionComparator.t);
     type notifier =
       | Update(Model.raw)
-      | Touch
-      | Idle;
+      | Touch;
     type observer = {
       models,
       notifier,
@@ -198,11 +196,11 @@ module Make =
     let instance: t;
     let stream: stream(observer);
     let add: Model.t => unit;
-    let batchAdd: models => unit;
+    let addMany: models => unit;
     let remove: Model.t => unit;
-    let batchRemove: models => unit;
+    let removeMany: models => unit;
     let clear: unit => unit;
-    let batchUpdate: (models, Model.raw => Model.raw) => unit;
+    let updateMany: (models, Model.raw => Model.raw) => unit;
 
     module Observer: {
       type action =
@@ -232,8 +230,7 @@ module Make =
     type models = array(CollectionComparator.t);
     type notifier =
       | Update(Model.raw)
-      | Touch
-      | Idle;
+      | Touch;
     type observer = {
       models,
       notifier,
@@ -266,15 +263,15 @@ module Make =
       let set = Belt.Set.remove(instance#set, model);
       instance#next(set);
     };
-    let batchAdd = models => {
+    let addMany = models => {
       let set = Belt.Set.mergeMany(instance#set, models);
       instance#next(set);
     };
-    let batchRemove = models => {
+    let removeMany = models => {
       let set = Belt.Set.removeMany(instance#set, models);
       instance#next(set);
     };
-    let batchUpdate = (models, fn) =>
+    let updateMany = (models, fn) =>
       Belt.Array.forEach(models, model => Model.(model |. update(fn)));
     let clear = () => instance#next(set());
 
@@ -286,7 +283,7 @@ module Make =
         ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = (~observer=stream => stream, children) => {
         ...component,
-        initialState: () => {notifier: Idle, models: [||]},
+        initialState: () => {notifier: Touch, models: [||]},
         shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {

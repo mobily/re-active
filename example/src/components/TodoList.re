@@ -72,7 +72,7 @@ let make = _children => {
                          _e =>
                            todos
                            |. Belt.Array.keep(todo => todo#raw.completed)
-                           |. Collection.batchRemove
+                           |. Collection.removeMany
                        )>
                        (string("remove completed todos"))
                      </div>
@@ -80,7 +80,7 @@ let make = _children => {
                        onClick=(
                          _e =>
                            todos
-                           |. Collection.batchUpdate(model =>
+                           |. Collection.updateMany(model =>
                                 {...model, completed: ! model.completed}
                               )
                        )>
