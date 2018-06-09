@@ -248,7 +248,6 @@ module Make =
         Wonka.(
           subject.observer
           |> map(notifier => {notifier, models: Belt.Set.toArray(self#set)})
-          |> share
         );
       pub notify = notifier => self#subject.next(notifier);
       pub next = (~notifier=Touch, models) => {
