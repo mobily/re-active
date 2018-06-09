@@ -1,6 +1,6 @@
 {
   "name": "@mobily/re-active",
-  "version": "0.3.6",
+  "version": "0.3.7",
   "scripts": {
     "dev": "bsb -make-world -w",
     "clean": "bsb -clean-world",
