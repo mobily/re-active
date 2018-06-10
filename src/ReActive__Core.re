@@ -62,6 +62,7 @@ module type Intf = {
       stream: stream(observer),
     };
     let instance: t;
+    let createSet: unit => set;
     let stream: stream(observer);
     let add: Model.t => unit;
     let addMany: models => unit;
@@ -194,6 +195,7 @@ module Make =
       stream: stream(observer),
     };
     let instance: t;
+    let createSet: unit => set;
     let stream: stream(observer);
     let add: Model.t => unit;
     let addMany: models => unit;
@@ -252,8 +254,8 @@ module Make =
         self#notify(notifier);
       };
     };
-    let set = () => Belt.Set.make(~id=(module CollectionComparator));
-    let instance = (new t)(set());
+    let createSet = () => Belt.Set.make(~id=(module CollectionComparator));
+    let instance = (new t)(createSet());
     let stream = instance#stream;
     let add = model => {
       let set = Belt.Set.add(instance#set, model);
@@ -273,7 +275,7 @@ module Make =
     };
     let updateMany = (models, fn) =>
       Belt.Array.forEach(models, model => Model.(model |. update(fn)));
-    let clear = () => instance#next(set());
+    let clear = () => instance#next(createSet());
 
     module Observer = {
       type action =
