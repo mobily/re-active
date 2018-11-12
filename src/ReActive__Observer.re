@@ -7,8 +7,7 @@ module Observer = {
     let name: string;
     let observer: observable => stream(t);
     let initialState: observable => t;
-    let shouldUpdate:
-      ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
+    let shouldUpdate: ReasonReact.oldNewSelf(t, ReasonReact.noRetainedProps, 'c) => bool;
   };
 
   module type Intf = {
@@ -27,23 +26,14 @@ module Observer = {
       );
     let make:
       (~observable: observable, t => ReasonReact.reactElement) =>
-      ReasonReact.componentSpec(
-        state,
-        state,
-        ReasonReact.noRetainedProps,
-        ReasonReact.noRetainedProps,
-        action,
-      );
+      ReasonReact.componentSpec(state, state, ReasonReact.noRetainedProps, ReasonReact.noRetainedProps, action);
   };
 
-  module Make =
-         (M: Observer)
-         : (Intf with type t := M.t and type observable := M.observable) => {
+  module Make = (M: Observer) : (Intf with type t := M.t and type observable := M.observable) => {
     type action =
       | OnNext(M.t);
     type state = M.t;
-    let component =
-      ReasonReact.reducerComponent(M.name ++ "ReActiveCustomObserver");
+    let component = ReasonReact.reducerComponent(M.name ++ "ReActiveCustomObserver");
     let make = (~observable, children) => {
       ...component,
       initialState: () => M.initialState(observable),
@@ -53,11 +43,7 @@ module Observer = {
         | OnNext(raw) => ReasonReact.Update(raw)
         },
       didMount: self => {
-        let dispose =
-          Wonka.(
-            M.observer(observable)
-            |> subscribe(raw => self.send(OnNext(raw)))
-          );
+        let dispose = Wonka.(M.observer(observable) |> subscribe(raw => self.send(OnNext(raw))));
         self.onUnmount(dispose);
       },
       render: self => children(self.state),

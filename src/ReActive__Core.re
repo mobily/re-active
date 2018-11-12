@@ -1,6 +1,6 @@
 open ReActive__Types;
 
-[@bs.module] external isEqual : ('a, 'b) => bool = "react-fast-compare";
+[@bs.module] external isEqual: ('a, 'b) => bool = "react-fast-compare";
 
 module type Impl = {
   type t;
@@ -33,19 +33,15 @@ module type Intf = {
       type state = raw;
       let make:
         (~observable: t, raw => ReasonReact.reactElement) =>
-        ReasonReact.componentSpec(
-          state,
-          state,
-          ReasonReact.noRetainedProps,
-          ReasonReact.noRetainedProps,
-          action,
-        );
+        ReasonReact.componentSpec(state, state, ReasonReact.noRetainedProps, ReasonReact.noRetainedProps, action);
     };
   }
   and Collection: {
-    module CollectionComparator: {type t = Model.t; type identity;};
-    type set =
-      Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
+    module CollectionComparator: {
+      type t = Model.t;
+      type identity;
+    };
+    type set = Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
     type models = array(CollectionComparator.t);
     type notifier =
       | Update(Model.raw)
@@ -76,27 +72,13 @@ module type Intf = {
         | OnNext(observer);
       type state = observer;
       let make:
-        (
-          ~observer: stream(observer) => stream(observer)=?,
-          models => ReasonReact.reactElement
-        ) =>
-        ReasonReact.componentSpec(
-          state,
-          state,
-          ReasonReact.noRetainedProps,
-          ReasonReact.noRetainedProps,
-          action,
-        );
+        (~observer: stream(observer) => stream(observer)=?, models => ReasonReact.reactElement) =>
+        ReasonReact.componentSpec(state, state, ReasonReact.noRetainedProps, ReasonReact.noRetainedProps, action);
     };
   };
 };
 
-module Make =
-       (M: Impl)
-       : (
-           Intf with
-             type Model.raw = M.t and type Model.primaryKey = M.primaryKey
-         ) => {
+module Make = (M: Impl) : (Intf with type Model.raw = M.t and type Model.primaryKey = M.primaryKey) => {
   module rec Model: {
     type raw = M.t;
     type primaryKey = M.primaryKey;
@@ -119,13 +101,7 @@ module Make =
       type state = raw;
       let make:
         (~observable: t, raw => ReasonReact.reactElement) =>
-        ReasonReact.componentSpec(
-          state,
-          state,
-          ReasonReact.noRetainedProps,
-          ReasonReact.noRetainedProps,
-          action,
-        );
+        ReasonReact.componentSpec(state, state, ReasonReact.noRetainedProps, ReasonReact.noRetainedProps, action);
     };
   } = {
     type raw = M.t;
@@ -140,13 +116,13 @@ module Make =
       pub next = value => {
         raw = value;
         self#subject.next(value);
-        Collection.(Update(self#raw) |. instance#notify);
+        Collection.(instance#notify(Update(self#raw)));
       };
     };
     let default = M.default;
     let primaryKey = M.primaryKey;
     let make = fn => (new t)(fn(default()));
-    let update = (observable, fn) => fn(observable#raw) |. observable#next;
+    let update = (observable, fn) => observable#next(observable#raw->fn);
     let destroy = observable => Collection.remove(observable);
     let save = observable => Collection.add(observable);
 
@@ -154,21 +130,17 @@ module Make =
       type action =
         | OnNext(raw);
       type state = raw;
-      let component =
-        ReasonReact.reducerComponent(M.name ++ "ReActiveModelObserver");
+      let component = ReasonReact.reducerComponent(M.name ++ "ReActiveModelObserver");
       let make = (~observable, children) => {
         ...component,
         initialState: () => observable#raw,
-        shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
+        shouldUpdate: ({oldSelf, newSelf}) => !isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {
           | OnNext(raw) => ReasonReact.Update(raw)
           },
         didMount: self => {
-          let dispose =
-            Wonka.(
-              observable#stream |> subscribe(raw => self.send(OnNext(raw)))
-            );
+          let dispose = Wonka.(observable#stream |> subscribe(raw => self.send(OnNext(raw))));
           self.onUnmount(dispose);
         },
         render: self => children(self.state),
@@ -176,9 +148,11 @@ module Make =
     };
   }
   and Collection: {
-    module CollectionComparator: {type t = Model.t; type identity;};
-    type set =
-      Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
+    module CollectionComparator: {
+      type t = Model.t;
+      type identity;
+    };
+    type set = Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
     type models = array(CollectionComparator.t);
     type notifier =
       | Update(Model.raw)
@@ -209,17 +183,8 @@ module Make =
         | OnNext(observer);
       type state = observer;
       let make:
-        (
-          ~observer: stream(observer) => stream(observer)=?,
-          models => ReasonReact.reactElement
-        ) =>
-        ReasonReact.componentSpec(
-          state,
-          state,
-          ReasonReact.noRetainedProps,
-          ReasonReact.noRetainedProps,
-          action,
-        );
+        (~observer: stream(observer) => stream(observer)=?, models => ReasonReact.reactElement) =>
+        ReasonReact.componentSpec(state, state, ReasonReact.noRetainedProps, ReasonReact.noRetainedProps, action);
     };
   } = {
     module CollectionComparator =
@@ -227,8 +192,7 @@ module Make =
         type t = Model.t;
         let cmp = compare;
       });
-    type set =
-      Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
+    type set = Belt.Set.t(CollectionComparator.t, CollectionComparator.identity);
     type models = array(CollectionComparator.t);
     type notifier =
       | Update(Model.raw)
@@ -243,11 +207,7 @@ module Make =
       val subject = Wonka.makeSubject();
       pub set = set;
       pri subject = subject;
-      pub stream =
-        Wonka.(
-          subject.observer
-          |> map(notifier => {notifier, models: Belt.Set.toArray(self#set)})
-        );
+      pub stream = Wonka.(subject.observer |> map(notifier => {notifier, models: Belt.Set.toArray(self#set)}));
       pub notify = notifier => self#subject.next(notifier);
       pub next = (~notifier=Touch, models) => {
         set = models;
@@ -273,30 +233,24 @@ module Make =
       let set = Belt.Set.removeMany(instance#set, models);
       instance#next(set);
     };
-    let updateMany = (models, fn) =>
-      Belt.Array.forEach(models, model => Model.(model |. update(fn)));
+    let updateMany = (models, fn) => Belt.Array.forEach(models, model => Model.(model->(update(fn))));
     let clear = () => instance#next(createSet());
 
     module Observer = {
       type action =
         | OnNext(observer);
       type state = observer;
-      let component =
-        ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
+      let component = ReasonReact.reducerComponent(M.name ++ "ReActiveCollectionObserver");
       let make = (~observer=stream => stream, children) => {
         ...component,
         initialState: () => {notifier: Touch, models: [||]},
-        shouldUpdate: ({oldSelf, newSelf}) => ! isEqual(oldSelf, newSelf),
+        shouldUpdate: ({oldSelf, newSelf}) => !isEqual(oldSelf, newSelf),
         reducer: (action, _state) =>
           switch (action) {
           | OnNext(observer) => ReasonReact.Update(observer)
           },
         didMount: self => {
-          let dispose =
-            Wonka.(
-              observer(stream)
-              |> subscribe(observer => self.send(OnNext(observer)))
-            );
+          let dispose = Wonka.(observer(stream) |> subscribe(observer => self.send(OnNext(observer))));
           self.onUnmount(dispose);
           instance#notify(Touch);
         },

@@ -7,6 +7,7 @@ dist/
 .merlin
 .vscode
 .bsb.lock
+.idea
 
 *.log
 *.bs.js
